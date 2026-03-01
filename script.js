@@ -187,8 +187,8 @@ const claimsData = {
 const approvalData = {
     years: ['2022', '2023', '2024', '2025'],
     market: [76, 70, 62, 64],
-    clalit: [77, 68, 61, 60],
-    withoutClalit: [73, 75, 65, 69]
+    harel: [77, 68, 61, 60],
+    menora: [73, 75, 65, 69]
 };
 
 // Demographic weights for cancellation age groups (total insured per group)
@@ -965,8 +965,8 @@ function initApprovalChart() {
             labels: approvalData.years,
             datasets: [
                 { label: 'שוק', data: approvalData.market, borderColor: '#3B82F6', backgroundColor: '#3B82F6', fill: false, tension: 0.4, borderWidth: 3, pointRadius: 6, pointBackgroundColor: '#3B82F6', pointBorderColor: 'white', pointBorderWidth: 2 },
-                { label: 'כללית', data: approvalData.clalit, borderColor: colors.clalit, backgroundColor: colors.clalit, fill: false, tension: 0.4, borderWidth: 3, pointRadius: 6, pointBackgroundColor: colors.clalit, pointBorderColor: 'white', pointBorderWidth: 2 },
-                { label: 'ללא כללית', data: approvalData.withoutClalit, borderColor: '#F59E0B', backgroundColor: '#F59E0B', fill: false, tension: 0.4, borderWidth: 3, pointRadius: 6, pointBackgroundColor: '#F59E0B', pointBorderColor: 'white', pointBorderWidth: 2 }
+                { label: 'הראל', data: approvalData.harel, borderColor: '#E11D48', backgroundColor: '#E11D48', fill: false, tension: 0.4, borderWidth: 3, pointRadius: 6, pointBackgroundColor: '#E11D48', pointBorderColor: 'white', pointBorderWidth: 2 },
+                { label: 'מנורה', data: approvalData.menora, borderColor: '#F59E0B', backgroundColor: '#F59E0B', fill: false, tension: 0.4, borderWidth: 3, pointRadius: 6, pointBackgroundColor: '#F59E0B', pointBorderColor: 'white', pointBorderWidth: 2 }
             ]
         },
         options: {
