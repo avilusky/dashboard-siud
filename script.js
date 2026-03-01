@@ -469,9 +469,7 @@ function initTreemap(filter = 'all') {
         .on('mouseout', function() {
             tooltip.style('opacity', 0).style('display', 'none');
         })
-        .on('click', function(event, d) {
-            openAgeGroupPanel(d.data.name);
-        });
+;
     
     // Add labels (age group)
     cells.append('text')
@@ -995,7 +993,7 @@ function initAgeDistChart(year) {
     const data = claimsAgeDistData[currentAgeDistYear];
 
     // Update KPIs
-    document.getElementById('ageDistAvgAge').textContent = data.avgAge;
+    document.getElementById('ageDistAvgAge').textContent = data.avgAge.toFixed(1);
     document.getElementById('ageDistMedianAge').textContent = data.medianAge;
     document.getElementById('ageDistTotal').textContent = data.total.toLocaleString();
 
@@ -1282,8 +1280,8 @@ document.addEventListener('DOMContentLoaded', () => {
         openPanel('fundPanel');
         setTimeout(() => initFundGrowthChart('all'), 100);
     });
-// Cancellation card drill-down
-    document.getElementById('cancellationCard')?.addEventListener('click', () => {
+// Cancellation card drill-down - only via drill-indicator button
+    document.getElementById('cancellationCard')?.querySelector('.drill-indicator')?.addEventListener('click', () => {
         openCancellationAgePanel();
     });
     
