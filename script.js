@@ -186,6 +186,14 @@ const cancellationYearlyData = {
     leumit: [0.994, 1.387, 1.286, 0.986, 1.365]
 };
 
+// Claims approval rate data
+const approvalData = {
+    years: ['2022', '2023', '2024', '2025'],
+    market: [76, 70, 62, 64],
+    clalit: [77, 68, 61, 60],
+    withoutClalit: [73, 75, 65, 69]
+};
+
 // Demographic weights for cancellation age groups (total insured per group)
 const cancellationAgeWeights = {};
 for (const [group, hmos] of Object.entries(demographicsData.ageGroups)) {
@@ -255,7 +263,7 @@ const frequencyByScenario = {
     permissive: { label: 'תרחיש קיצון מתירני', data: [0.366, 0.381, 0.463, 0.494, 0.426, 0.321] },
     be: { label: 'תרחיש BE', data: [0.366, 0.382, 0.467, 0.503, 0.440, 0.340] },
     conservativePrime: { label: 'תרחיש קיצון שמרני', data: [0.366, 0.383, 0.471, 0.514, 0.458, 0.364] },
-    conservative: { label: 'תרחיש קיצון שמרני מאוד', data: [0.366, 0.383, 0.471, 0.514, 0.458, 0.251] }
+    conservative: { label: 'תרחיש קיצון שמרני ללא תוספת', data: [0.366, 0.383, 0.471, 0.514, 0.458, 0.251] }
 };
 
 const frequencyByHmo = {
@@ -306,6 +314,9 @@ let hmoProfitTrendChart, hmoComparisonChart, managementFeesChart;
 let cancellationAgeTrendChart = null;
 let cancellationAgeByHmoChart = null;
 let cancellationAgeGrowthChart = null;
+
+// Approval drill-down chart
+let approvalTrendChart = null;
 
 // ===== ANIMATION OPTIONS =====
 const barAnimation = {
@@ -850,6 +861,48 @@ cancellationChart = new Chart(cancellationCtx, {
     }
 });}
 
+// ===== APPROVAL DRILL-DOWN CHART =====
+function initApprovalChart() {
+    const ctx = document.getElementById('approvalTrendChart');
+    if (!ctx) return;
+    if (approvalTrendChart) approvalTrendChart.destroy();
+
+    approvalTrendChart = new Chart(ctx.getContext('2d'), {
+        type: 'line',
+        data: {
+            labels: approvalData.years,
+            datasets: [
+                { label: 'שוק', data: approvalData.market, borderColor: '#3B82F6', backgroundColor: '#3B82F6', fill: false, tension: 0.4, borderWidth: 3, pointRadius: 6, pointBackgroundColor: '#3B82F6', pointBorderColor: 'white', pointBorderWidth: 2 },
+                { label: 'כללית', data: approvalData.clalit, borderColor: colors.clalit, backgroundColor: colors.clalit, fill: false, tension: 0.4, borderWidth: 3, pointRadius: 6, pointBackgroundColor: colors.clalit, pointBorderColor: 'white', pointBorderWidth: 2 },
+                { label: 'ללא כללית', data: approvalData.withoutClalit, borderColor: '#F59E0B', backgroundColor: '#F59E0B', fill: false, tension: 0.4, borderWidth: 3, pointRadius: 6, pointBackgroundColor: '#F59E0B', pointBorderColor: 'white', pointBorderWidth: 2 }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: lineAnimation,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: { position: 'bottom', labels: { usePointStyle: true } },
+                tooltip: {
+                    callbacks: {
+                        label: (ctx) => `${ctx.dataset.label}: ${ctx.raw}%`
+                    }
+                }
+            },
+            scales: {
+                x: { grid: { display: false } },
+                y: {
+                    grid: { color: '#F1F5F9' },
+                    ticks: { callback: (v) => v + '%' },
+                    min: 50,
+                    max: 85
+                }
+            }
+        }
+    });
+}
+
 // ===== CLAIMS PANEL CHARTS =====
 function initClaimsCharts() {
     initScenariosChart();
@@ -1280,6 +1333,13 @@ document.addEventListener('DOMContentLoaded', () => {
         openPanel('fundPanel');
         setTimeout(() => initFundGrowthChart('all'), 100);
     });
+// Claims approval KPI drill-down
+    document.getElementById('approvalKpi')?.querySelector('.drill-indicator')?.addEventListener('click', () => {
+        document.getElementById('claimsApprovalPanel').classList.add('active');
+        document.body.style.overflow = 'hidden';
+        setTimeout(() => initApprovalChart(), 100);
+    });
+
 // Cancellation card drill-down - only via drill-indicator button
     document.getElementById('cancellationCard')?.querySelector('.drill-indicator')?.addEventListener('click', () => {
         openCancellationAgePanel();

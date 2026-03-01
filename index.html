@@ -60,13 +60,18 @@
     <div class="kpi-change-secondary">+0.5% QoQ</div>
 </div>
             </div>
-            <div class="kpi-card">
+            <div class="kpi-card" id="approvalKpi">
                 <div class="kpi-icon purple">✅</div>
                 <div class="kpi-data">
-                    <span class="kpi-value">67%</span>
+                    <span class="kpi-value">64%</span>
                     <span class="kpi-label">אישור תביעות</span>
                 </div>
-                <div class="kpi-change down">0% שנתי</div>
+                <div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-end;">
+                    <div class="kpi-change down">+3% שנתי</div>
+                    <div class="drill-indicator" style="font-size: 10px; padding: 4px 10px;">
+                        <span>🔍 Drill Down</span>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -190,6 +195,31 @@
 
         </div>
     </div>
+
+<!-- Claims Approval Drill-Down Panel -->
+<div class="drill-panel sub-panel" id="claimsApprovalPanel">
+    <div class="panel-overlay"></div>
+    <div class="panel-content">
+        <div class="panel-header">
+            <div class="panel-title-group">
+                <h2 class="panel-title">אחוז אישור תביעות</h2>
+                <p class="panel-subtitle">מגמת אישור תביעות לפי שנים | 2022-2025</p>
+            </div>
+            <button class="panel-close" onclick="closePanel('claimsApprovalPanel')">✕</button>
+        </div>
+        <div class="panel-grid">
+            <div class="panel-card wide">
+                <div class="panel-card-header">
+                    <h3>מגמת אחוז אישור תביעות</h3>
+                    <span class="panel-card-info">שוק, כללית, ללא כללית</span>
+                </div>
+                <div class="panel-chart-container tall">
+                    <canvas id="approvalTrendChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 <!-- Fund Balance Drill-Down Panel -->
 <div class="drill-panel" id="fundPanel">
@@ -398,9 +428,11 @@
                         <div class="panel-chart-container tall">
                             <canvas id="scenariosChart"></canvas>
                         </div>
-                        <p style="font-size: 11px; color: #92400e; background: #fef3c7; padding: 8px 14px; border-radius: 8px; margin-top: 12px; direction: rtl;">
-                            * תרחיש קיצון שמרני מאוד — תוספת 45% לשנת 2025 — הנחה מאוד שמרנית
-                        </p>
+                        <div style="font-size: 11px; color: #64748b; background: #f1f5f9; padding: 12px 16px; border-radius: 8px; margin-top: 12px; direction: rtl; line-height: 1.8;">
+                            <div style="font-weight: 600; margin-bottom: 4px; color: #475569;">הבהרה לגבי תוספת שמרנות:</div>
+                            <div><span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #3B82F6; margin-left: 6px; vertical-align: middle;"></span><strong>קיצון מתירני</strong>, <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #F59E0B; margin-left: 6px; vertical-align: middle;"></span><strong>BE</strong>, <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #9CA3AF; margin-left: 6px; vertical-align: middle;"></span><strong>קיצון שמרני</strong> — כוללים תוספת שמרנות של 45% לשכיחות</div>
+                            <div><span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #84CC16; margin-left: 6px; vertical-align: middle;"></span><strong>קיצון שמרני ללא תוספת</strong> — נתוני הבסיס של תרחיש הקיצון השמרני לפני הוספת מרווח השמרנות</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -415,6 +447,12 @@
                         </div>
                         <div class="panel-chart-container tall">
                             <canvas id="hmoFrequencyChart"></canvas>
+                        </div>
+                        <div style="font-size: 11px; color: #64748b; background: #f1f5f9; padding: 12px 16px; border-radius: 8px; margin-top: 12px; direction: rtl; line-height: 1.8;">
+                            <div style="font-weight: 600; margin-bottom: 4px; color: #475569;">הבהרה לגבי חישוב ה-IBNR:</div>
+                            <div><span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #3B82F6; margin-left: 6px; vertical-align: middle;"></span><strong>שכיחות כללית</strong> — חישוב IBNR עפ״י נתוני כללית בלבד (לא IBNR של השוק)</div>
+                            <div><span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #F59E0B; margin-left: 6px; vertical-align: middle;"></span><strong>שכיחות ללא כללית</strong> — חישוב IBNR עפ״י נתוני כל השוק ללא כללית (לא IBNR של השוק)</div>
+                            <div><span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #9CA3AF; margin-left: 6px; vertical-align: middle;"></span><strong>שכיחות כל השוק</strong> — חישוב IBNR עפ״י נתוני השוק כולו</div>
                         </div>
                     </div>
                 </div>
@@ -470,9 +508,8 @@
                     </div>
                 </div>
             </div>
-            <div class="adl-info-banner" style="margin-top: 16px;">
-                <span class="info-icon">💡</span>
-                <span class="info-text">החל משנת 2025, קריטריון 3 ADL ישן אינו מזכה בתגמולי ביטוח סיעודי</span>
+            <div style="font-size: 11px; color: #64748b; background: #f1f5f9; padding: 12px 16px; border-radius: 8px; margin-top: 16px; direction: rtl; line-height: 1.8;">
+                <div><span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #F87171; margin-left: 6px; vertical-align: middle;"></span><strong>ADL 3 ישן</strong> — החל משנת 2025, קריטריון זה אינו מזכה בתגמולי ביטוח סיעודי</div>
             </div>
         </div>
     </div>
