@@ -917,7 +917,10 @@ datasets: [
             plugins: { legend: { position: 'bottom' } },
             scales: {
                 x: { grid: { display: false } },
-                y: { grid: { color: '#F1F5F9' } }
+                y: {
+                    grid: { color: '#F1F5F9' },
+                    ticks: { callback: (v) => v >= 1000 ? (v / 1000) + 'K' : v }
+                }
             }
         }
     });
@@ -945,9 +948,9 @@ cancellationChart = new Chart(cancellationCtx, {
         plugins: { legend: { position: 'bottom' } },
         scales: {
             x: { grid: { display: false } },
-            y: { 
+            y: {
                 grid: { color: '#F1F5F9' },
-                ticks: { callback: (v) => v.toFixed(2) + '%' }
+                ticks: { callback: (v) => v.toFixed(1) + '%' }
             }
         }
     }
@@ -1636,6 +1639,7 @@ if (ageGroupTrendChart) {
             responsive: true,
             maintainAspectRatio: false,
             animation: lineAnimation,
+            interaction: { mode: 'index', intersect: false },
             plugins: { legend: { position: 'top' } },
             scales: {
                 x: { grid: { display: false } },
@@ -1926,12 +1930,13 @@ function initCancellationAgeCharts(selectedGroups) {
                 responsive: true,
                 maintainAspectRatio: false,
                 animation: lineAnimation,
+                interaction: { mode: 'index', intersect: false },
                 plugins: { legend: { position: 'bottom' } },
 scales: {
                     x: { grid: { display: false } },
-                    y: { 
+                    y: {
                         grid: { color: '#F1F5F9' },
-                        ticks: { callback: (v) => parseFloat(v).toFixed(2) + '%' }
+                        ticks: { callback: (v) => parseFloat(v).toFixed(1) + '%' }
                     }
                 }
             }
@@ -1963,9 +1968,9 @@ scales: {
                 plugins: { legend: { display: false } },
 scales: {
                     x: { grid: { display: false } },
-                    y: { 
+                    y: {
                         grid: { color: '#F1F5F9' },
-                        ticks: { callback: (v) => parseFloat(v).toFixed(2) + '%' }
+                        ticks: { callback: (v) => parseFloat(v).toFixed(1) + '%' }
                     }
                 }
             }
@@ -2001,9 +2006,9 @@ scales: {
             plugins: { legend: { display: false } },
             scales: {
                 x: { grid: { display: false } },
-                y: { 
+                y: {
                     grid: { color: '#F1F5F9' },
-                    ticks: { callback: (v) => parseFloat(v).toFixed(1) + '%' }
+                    ticks: { callback: (v) => Math.round(v) + '%' }
                 }
             }
         }

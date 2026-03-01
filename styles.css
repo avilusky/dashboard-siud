@@ -973,22 +973,18 @@ box-shadow:
 .age-group-nav {
     display: flex;
     justify-content: center;
-    gap: 8px;
+    gap: 6px;
     margin-bottom: 16px;
-    padding: 10px 16px;
-    background: #f8fafc;
-    border-radius: 12px;
-    border: 1px solid #e2e8f0;
 }
 
 .age-nav-btn {
-    padding: 10px 20px;
-    border: 2px solid #e2e8f0;
+    padding: 6px 12px;
+    border: 1px solid #e2e8f0;
     background: white;
-    border-radius: 8px;
+    border-radius: 6px;
     font-family: inherit;
-    font-size: 14px;
-    font-weight: 600;
+    font-size: 11px;
+    font-weight: 500;
     color: var(--text-secondary);
     cursor: pointer;
     transition: all 0.2s ease;
@@ -1004,7 +1000,7 @@ box-shadow:
     background: #103A97;
     border-color: #103A97;
     color: white;
-    box-shadow: 0 4px 12px rgba(16, 58, 151, 0.3);
+    box-shadow: 0 2px 6px rgba(16, 58, 151, 0.3);
 }
 
 .chart-type-btn.active {
