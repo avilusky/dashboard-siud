@@ -16,7 +16,7 @@ Chart.register({
         const legend = chart.legend;
         const ctx = chart.ctx;
         ctx.save();
-        ctx.font = "10px 'Heebo', sans-serif";
+        ctx.font = "12px 'Heebo', sans-serif";
         ctx.fillStyle = 'rgba(148, 163, 184, 0.6)';
         ctx.textAlign = 'right';
         ctx.textBaseline = 'middle';
