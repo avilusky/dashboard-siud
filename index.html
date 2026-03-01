@@ -149,7 +149,11 @@
     <div class="panel-card-header">
         <h3>התפלגות לפי קבוצות גיל</h3>
         <div style="display: flex; align-items: center; gap: 16px;">
-            <div class="treemap-controls">
+            <div class="treemap-controls" style="display: flex; align-items: center; gap: 6px;">
+                <div id="chartTypeToggle" style="display: flex; gap: 2px; background: #e2e8f0; border-radius: 8px; padding: 2px; margin-left: 10px;">
+                    <button class="chart-type-btn active" data-type="treemap" title="Treemap" style="padding: 4px 8px; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; background: transparent; transition: all 0.2s;">▦</button>
+                    <button class="chart-type-btn" data-type="bar" title="עמודות" style="padding: 4px 8px; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; background: transparent; transition: all 0.2s;">📊</button>
+                </div>
                 <button class="treemap-view-btn active" data-view="all">כל הקופות</button>
                 <button class="treemap-view-btn" data-view="clalit">כללית</button>
                 <button class="treemap-view-btn" data-view="maccabi">מכבי</button>
@@ -162,6 +166,11 @@
         </div>
     </div>
     <div id="ageTreemap" class="treemap-container"></div>
+    <div id="ageBarContainer" class="panel-chart-container tall" style="display: none;">
+        <canvas id="ageDistBarChart"></canvas>
+    </div>
+    <div id="treemapHiddenBar" style="display: none; margin-top: 8px; direction: rtl; font-size: 11px; color: #64748b; align-items: center; gap: 8px; flex-wrap: wrap;">
+    </div>
 </div>
 
                 <!-- New Members -->
@@ -428,7 +437,7 @@
                         <div class="panel-chart-container tall">
                             <canvas id="scenariosChart"></canvas>
                         </div>
-                        <div style="font-size: 11px; color: #64748b; background: #f1f5f9; padding: 12px 16px; border-radius: 8px; margin-top: 12px; direction: rtl; line-height: 1.8;">
+                        <div style="font-size: 12px; color: #64748b; background: #f1f5f9; padding: 12px 16px; border-radius: 8px; margin-top: 12px; direction: rtl; line-height: 1.8;">
                             <div style="font-weight: 600; margin-bottom: 4px; color: #475569;">הבהרה לגבי תוספת שמרנות:</div>
                             <div><span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #3B82F6; margin-left: 6px; vertical-align: middle;"></span><strong>קיצון מתירני</strong>, <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #F59E0B; margin-left: 6px; vertical-align: middle;"></span><strong>BE</strong>, <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #9CA3AF; margin-left: 6px; vertical-align: middle;"></span><strong>קיצון שמרני</strong> — כוללים תוספת שמרנות של 45% לשכיחות</div>
                             <div><span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #84CC16; margin-left: 6px; vertical-align: middle;"></span><strong>קיצון שמרני ללא תוספת</strong> — נתוני הבסיס של תרחיש הקיצון השמרני לפני הוספת מרווח השמרנות</div>
@@ -448,7 +457,7 @@
                         <div class="panel-chart-container tall">
                             <canvas id="hmoFrequencyChart"></canvas>
                         </div>
-                        <div style="font-size: 11px; color: #64748b; background: #f1f5f9; padding: 12px 16px; border-radius: 8px; margin-top: 12px; direction: rtl; line-height: 1.8;">
+                        <div style="font-size: 12px; color: #64748b; background: #f1f5f9; padding: 12px 16px; border-radius: 8px; margin-top: 12px; direction: rtl; line-height: 1.8;">
                             <div style="font-weight: 600; margin-bottom: 4px; color: #475569;">הבהרה לגבי חישוב ה-IBNR:</div>
                             <div><span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #3B82F6; margin-left: 6px; vertical-align: middle;"></span><strong>שכיחות כללית</strong> — חישוב IBNR עפ״י נתוני כללית בלבד (לא IBNR של השוק)</div>
                             <div><span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #F59E0B; margin-left: 6px; vertical-align: middle;"></span><strong>שכיחות ללא כללית</strong> — חישוב IBNR עפ״י נתוני כל השוק ללא כללית (לא IBNR של השוק)</div>
@@ -508,7 +517,7 @@
                     </div>
                 </div>
             </div>
-            <div style="font-size: 11px; color: #64748b; background: #f1f5f9; padding: 12px 16px; border-radius: 8px; margin-top: 16px; direction: rtl; line-height: 1.8;">
+            <div style="font-size: 12px; color: #64748b; background: #f1f5f9; padding: 12px 16px; border-radius: 8px; margin-top: 16px; direction: rtl; line-height: 1.8;">
                 <div><span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #F87171; margin-left: 6px; vertical-align: middle;"></span><strong>ADL 3 ישן</strong> — החל משנת 2025, קריטריון זה אינו מזכה בתגמולי ביטוח סיעודי</div>
             </div>
         </div>

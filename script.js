@@ -3,6 +3,8 @@ Chart.defaults.font.family = "'Heebo', sans-serif";
 Chart.defaults.font.size = 13;
 Chart.defaults.color = '#5A6B7C';
 Chart.defaults.plugins.legend.labels.usePointStyle = true;
+Chart.defaults.plugins.legend.rtl = true;
+Chart.defaults.plugins.legend.labels.textDirection = 'rtl';
 
 // Legend click hint plugin - draws a subtle hint next to the legend
 Chart.register({
@@ -179,12 +181,7 @@ const claimsData = {
     }
 };
 
-const cancellationYearlyData = {
-    clalit: [0.72, 0.795, 0.944, 1.212, 1.227],
-    maccabi: [0.552, 0.618, 0.571, 0.754, 1.007],
-    meuhedet: [2.82, 3.288, 3.076, 3.15, 3.416],
-    leumit: [0.994, 1.387, 1.286, 0.986, 1.365]
-};
+// cancellationYearlyData is computed after cancellationAgeWeights are ready (see below)
 
 // Claims approval rate data
 const approvalData = {
@@ -256,6 +253,18 @@ const cancellationByAgeData = {
         leumit: [0.166, 0.274, 0.116, 0.000, 0.837]
     }
 };
+
+// Compute cancellationYearlyData as weighted average from age group data (same as drill-down)
+const allAgeGroups = Object.keys(cancellationByAgeData);
+const totalWeight = allAgeGroups.reduce((acc, g) => acc + cancellationAgeWeights[g], 0);
+const cancellationYearlyData = {};
+['clalit', 'maccabi', 'meuhedet', 'leumit'].forEach(hmo => {
+    cancellationYearlyData[hmo] = [0, 1, 2, 3, 4].map(i => {
+        const weightedSum = allAgeGroups.reduce((acc, g) => acc + cancellationByAgeData[g][hmo][i] * cancellationAgeWeights[g], 0);
+        return parseFloat((weightedSum / totalWeight).toFixed(3));
+    });
+});
+
 // ===== FREQUENCY DATA =====
 const frequencyYears = ['2020', '2021', '2022', '2023', '2024', '2025'];
 
@@ -294,6 +303,7 @@ const profitData = {
 };
 
 // ===== CHART INSTANCES =====
+let ageDistBarChart = null;
 let fundBalanceChart;
 let ageGroupTrendChart = null;
 let ageGroupByHmoChart = null;
@@ -373,7 +383,7 @@ let currentAgeDistYear = '2022';
 // ===== TREEMAP =====
 const treemapColors = {
     '0-19': '#60A5FA',
-    '20-29': '#34D399', 
+    '20-29': '#34D399',
     '30-39': '#A78BFA',
     '40-49': '#FBBF24',
     '50-59': '#F87171',
@@ -383,74 +393,93 @@ const treemapColors = {
     '90+': '#FB923C'
 };
 
+// Track hidden age groups across filter switches
+const hiddenAgeGroups = new Set();
+let currentTreemapFilter = 'all';
+
+function updateHiddenBar() {
+    const bar = document.getElementById('treemapHiddenBar');
+    if (!bar) return;
+    if (hiddenAgeGroups.size === 0) {
+        bar.style.display = 'none';
+        return;
+    }
+    bar.style.display = 'flex';
+    bar.innerHTML = '<span style="font-weight: 600; color: #475569;">מוסתרות:</span>';
+    hiddenAgeGroups.forEach(age => {
+        const chip = document.createElement('span');
+        chip.style.cssText = 'background:' + treemapColors[age] + '; color: white; padding: 3px 10px; border-radius: 12px; cursor: pointer; font-size: 11px; font-weight: 500; transition: opacity 0.2s;';
+        chip.textContent = age + ' ✕';
+        chip.title = 'לחץ להציג חזרה';
+        chip.addEventListener('mouseenter', () => chip.style.opacity = '0.7');
+        chip.addEventListener('mouseleave', () => chip.style.opacity = '1');
+        chip.addEventListener('click', () => {
+            hiddenAgeGroups.delete(age);
+            refreshAgeChart();
+        });
+        bar.appendChild(chip);
+    });
+    // Add "show all" button
+    const resetBtn = document.createElement('span');
+    resetBtn.style.cssText = 'background: #e2e8f0; color: #475569; padding: 3px 10px; border-radius: 12px; cursor: pointer; font-size: 11px; font-weight: 600; transition: opacity 0.2s;';
+    resetBtn.textContent = 'הצג הכל';
+    resetBtn.addEventListener('mouseenter', () => resetBtn.style.opacity = '0.7');
+    resetBtn.addEventListener('mouseleave', () => resetBtn.style.opacity = '1');
+    resetBtn.addEventListener('click', () => {
+        hiddenAgeGroups.clear();
+        refreshAgeChart();
+    });
+    bar.appendChild(resetBtn);
+}
+
+function refreshAgeChart() {
+    if (currentChartType === 'treemap') {
+        initTreemap(currentTreemapFilter);
+    } else {
+        initAgeDistBar(currentTreemapFilter);
+    }
+}
+
 function initTreemap(filter = 'all') {
+    currentTreemapFilter = filter;
     const container = document.getElementById('ageTreemap');
     if (!container) return;
-    
-    // Remove old tooltips
+
     document.querySelectorAll('.treemap-tooltip').forEach(t => t.remove());
-    
     container.innerHTML = '';
-    
+
     const width = container.clientWidth;
     const height = container.clientHeight || 320;
-    
-    // Build data based on filter
+
     let data = [];
     const ageGroups = Object.keys(demographicsData.ageGroups);
-    
+
     ageGroups.forEach(age => {
+        if (hiddenAgeGroups.has(age)) return;
         let value;
         if (filter === 'all') {
-            value = demographicsData.ageGroups[age].clalit + 
-                    demographicsData.ageGroups[age].maccabi + 
-                    demographicsData.ageGroups[age].meuhedet + 
+            value = demographicsData.ageGroups[age].clalit +
+                    demographicsData.ageGroups[age].maccabi +
+                    demographicsData.ageGroups[age].meuhedet +
                     demographicsData.ageGroups[age].leumit;
         } else {
             value = demographicsData.ageGroups[age][filter];
         }
         data.push({ name: age, value: value });
     });
-    
+
     const total = data.reduce((sum, d) => sum + d.value, 0);
-    
-    // Add percentage to data
-    data = data.map(d => ({
-        ...d,
-        percentage: ((d.value / total) * 100).toFixed(1)
-    }));
-    
-    // Create hierarchy
-    const root = d3.hierarchy({ children: data })
-        .sum(d => d.value)
-        .sort((a, b) => b.value - a.value);
-    
-    // Create treemap layout
-    d3.treemap()
-        .size([width, height])
-        .padding(3)
-        .round(true)(root);
-    
-    // Create SVG
-    const svg = d3.select(container)
-        .append('svg')
-        .attr('width', width)
-        .attr('height', height);
-    
-    // Create tooltip
-    const tooltip = d3.select('body')
-        .append('div')
-        .attr('class', 'treemap-tooltip')
-        .style('opacity', 0)
-        .style('display', 'none');
-    
-    // Create cells
-    const cells = svg.selectAll('g')
-        .data(root.leaves())
-        .join('g')
-        .attr('transform', d => `translate(${d.x0},${d.y0})`);
-    
-    // Add rectangles
+    data = data.map(d => ({ ...d, percentage: ((d.value / total) * 100).toFixed(1) }));
+
+    const root = d3.hierarchy({ children: data }).sum(d => d.value).sort((a, b) => b.value - a.value);
+    d3.treemap().size([width, height]).padding(3).round(true)(root);
+
+    const svg = d3.select(container).append('svg').attr('width', width).attr('height', height);
+
+    const tooltip = d3.select('body').append('div').attr('class', 'treemap-tooltip').style('opacity', 0).style('display', 'none');
+
+    const cells = svg.selectAll('g').data(root.leaves()).join('g').attr('transform', d => `translate(${d.x0},${d.y0})`);
+
     cells.append('rect')
         .attr('class', 'treemap-cell')
         .attr('width', d => d.x1 - d.x0)
@@ -458,57 +487,116 @@ function initTreemap(filter = 'all') {
         .attr('fill', d => treemapColors[d.data.name])
         .attr('rx', 6)
         .on('mouseover', function(event, d) {
-            tooltip.style('display', 'block')
-                .style('opacity', 1)
-                .html(`
-                    <div class="treemap-tooltip-title">גילאי ${d.data.name}</div>
-                    <div class="treemap-tooltip-row">
-                        <span class="treemap-tooltip-label">מבוטחים:</span>
-                        <span class="treemap-tooltip-value">${d.data.value.toLocaleString()}</span>
-                    </div>
-                    <div class="treemap-tooltip-row">
-                        <span class="treemap-tooltip-label">אחוז מסה"כ:</span>
-                        <span class="treemap-tooltip-value">${d.data.percentage}%</span>
-                    </div>
-                `);
+            tooltip.style('display', 'block').style('opacity', 1)
+                .html(`<div class="treemap-tooltip-title">גילאי ${d.data.name}</div>
+                    <div class="treemap-tooltip-row"><span class="treemap-tooltip-label">מבוטחים:</span><span class="treemap-tooltip-value">${d.data.value.toLocaleString()}</span></div>
+                    <div class="treemap-tooltip-row"><span class="treemap-tooltip-label">אחוז מסה"כ:</span><span class="treemap-tooltip-value">${d.data.percentage}%</span></div>
+                    <div style="margin-top:6px;font-size:10px;color:rgba(255,255,255,0.5);text-align:center;">לחץ להסתרה</div>`);
         })
         .on('mousemove', function(event) {
-            tooltip
-                .style('left', (event.pageX + 15) + 'px')
-                .style('top', (event.pageY - 10) + 'px');
+            tooltip.style('left', (event.pageX + 15) + 'px').style('top', (event.pageY - 10) + 'px');
         })
         .on('mouseout', function() {
             tooltip.style('opacity', 0).style('display', 'none');
         })
-;
-    
-    // Add labels (age group)
-    cells.append('text')
-        .attr('class', 'treemap-label')
-        .attr('x', d => (d.x1 - d.x0) / 2)
-        .attr('y', d => (d.y1 - d.y0) / 2 - 8)
-        .attr('font-size', d => {
-            const boxWidth = d.x1 - d.x0;
-            const boxHeight = d.y1 - d.y0;
-            if (boxWidth < 50 || boxHeight < 40) return '0px';
-            if (boxWidth < 80) return '12px';
-            return '16px';
-        })
+        .on('click', function(event, d) {
+            hiddenAgeGroups.add(d.data.name);
+            initTreemap(currentTreemapFilter);
+        });
+
+    cells.append('text').attr('class', 'treemap-label')
+        .attr('x', d => (d.x1 - d.x0) / 2).attr('y', d => (d.y1 - d.y0) / 2 - 8)
+        .attr('font-size', d => { const w = d.x1-d.x0, h = d.y1-d.y0; if (w<50||h<40) return '0px'; if (w<80) return '12px'; return '16px'; })
         .text(d => d.data.name);
-    
-    // Add values (count + percentage)
-    cells.append('text')
-        .attr('class', 'treemap-value')
-        .attr('x', d => (d.x1 - d.x0) / 2)
-        .attr('y', d => (d.y1 - d.y0) / 2 + 12)
-        .attr('font-size', d => {
-            const boxWidth = d.x1 - d.x0;
-            const boxHeight = d.y1 - d.y0;
-            if (boxWidth < 60 || boxHeight < 50) return '0px';
-            if (boxWidth < 90) return '10px';
-            return '12px';
-        })
+
+    cells.append('text').attr('class', 'treemap-value')
+        .attr('x', d => (d.x1 - d.x0) / 2).attr('y', d => (d.y1 - d.y0) / 2 + 12)
+        .attr('font-size', d => { const w = d.x1-d.x0, h = d.y1-d.y0; if (w<60||h<50) return '0px'; if (w<90) return '10px'; return '12px'; })
         .text(d => `${(d.data.value/1000).toFixed(0)}K (${d.data.percentage}%)`);
+
+    updateHiddenBar();
+}
+
+// ===== AGE DISTRIBUTION BAR CHART =====
+let currentChartType = 'treemap'; // 'treemap' or 'bar'
+
+function initAgeDistBar(filter = 'all') {
+    currentTreemapFilter = filter;
+    const ctx = document.getElementById('ageDistBarChart');
+    if (!ctx) return;
+    if (ageDistBarChart) ageDistBarChart.destroy();
+
+    const ageGroups = Object.keys(demographicsData.ageGroups).filter(g => !hiddenAgeGroups.has(g));
+    const ageColors = ageGroups.map(g => treemapColors[g]);
+    const hmoNames = { all: 'כל הקופות', clalit: 'כללית', maccabi: 'מכבי', meuhedet: 'מאוחדת', leumit: 'לאומית' };
+
+    const data = ageGroups.map(g => {
+        if (filter === 'all') {
+            return demographicsData.ageGroups[g].clalit + demographicsData.ageGroups[g].maccabi + demographicsData.ageGroups[g].meuhedet + demographicsData.ageGroups[g].leumit;
+        }
+        return demographicsData.ageGroups[g][filter];
+    });
+    const total = data.reduce((a, b) => a + b, 0);
+
+    ageDistBarChart = new Chart(ctx.getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: ageGroups,
+            datasets: [{
+                label: hmoNames[filter],
+                data,
+                backgroundColor: ageColors,
+                borderRadius: 4,
+                barPercentage: 0.7,
+                categoryPercentage: 0.75
+            }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            animation: false,
+            onClick: (evt, elements) => {
+                if (elements.length > 0) {
+                    const ageName = ageGroups[elements[0].index];
+                    hiddenAgeGroups.add(ageName);
+                    initAgeDistBar(currentTreemapFilter);
+                }
+            },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: (c) => {
+                            const pct = ((c.raw / total) * 100).toFixed(1);
+                            return `${(c.raw / 1000).toFixed(0)}K (${pct}%)\n(לחץ להסתרה)`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: { grid: { display: false } },
+                y: { grid: { color: '#F1F5F9' }, ticks: { callback: v => (v / 1000).toFixed(0) + 'K' } }
+            }
+        }
+    });
+    updateHiddenBar();
+}
+
+function switchChartType(type) {
+    currentChartType = type;
+    document.querySelectorAll('.chart-type-btn').forEach(b => b.classList.remove('active'));
+    document.querySelector(`.chart-type-btn[data-type="${type}"]`)?.classList.add('active');
+
+    const treemapEl = document.getElementById('ageTreemap');
+    const barEl = document.getElementById('ageBarContainer');
+    if (type === 'treemap') {
+        treemapEl.style.display = '';
+        barEl.style.display = 'none';
+        initTreemap(currentTreemapFilter);
+    } else {
+        treemapEl.style.display = 'none';
+        barEl.style.display = '';
+        initAgeDistBar(currentTreemapFilter);
+    }
 }
 
 // Click on treemap card header to drill down
@@ -800,8 +888,12 @@ function closePanel(panelId) {
 
 // ===== DEMOGRAPHICS PANEL CHARTS =====
 function initDemographicsCharts() {
-    // Age Distribution Treemap
-    initTreemap('all');
+    // Age Distribution - render active chart type
+    if (currentChartType === 'treemap') {
+        initTreemap('all');
+    } else {
+        initAgeDistBar('all');
+    }
     
     // New Members
     const newMembersCtx = document.getElementById('newMembersChart').getContext('2d');
@@ -1460,12 +1552,23 @@ document.querySelectorAll('.age-dist-year-btn').forEach(btn => {
         });
     });
 
-// Treemap view buttons (excluding cancellation age buttons)
+// Treemap/Bar view buttons (excluding cancellation age buttons)
     document.querySelectorAll('.treemap-view-btn:not(.cancel-age-nav-btn)').forEach(btn => {
         btn.addEventListener('click', () => {
             document.querySelectorAll('.treemap-view-btn:not(.cancel-age-nav-btn)').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            initTreemap(btn.dataset.view);
+            if (currentChartType === 'treemap') {
+                initTreemap(btn.dataset.view);
+            } else {
+                initAgeDistBar(btn.dataset.view);
+            }
+        });
+    });
+
+    // Chart type toggle (treemap / bar)
+    document.querySelectorAll('.chart-type-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            switchChartType(btn.dataset.type);
         });
     });
 });
