@@ -530,52 +530,10 @@ function initMainCharts() {
         data: {
             labels: quarters,
             datasets: [
-                {
-                    label: 'מכבי',
-                    data: fundData.maccabi,
-                    backgroundColor: colors.maccabi,
-                    borderSkipped: false,
-                    borderRadius: { topLeft: 5, topRight: 5, bottomLeft: 0, bottomRight: 0 },
-                    barPercentage: 0.6,
-                    categoryPercentage: 0.65,
-                    stack: 'fund'
-                },
-                {
-                    label: 'כללית',
-                    data: fundData.clalit,
-                    backgroundColor: colors.clalit,
-                    borderColor: 'white',
-                    borderWidth: { top: 0, bottom: 3, left: 0, right: 0 },
-                    borderSkipped: false,
-                    borderRadius: { topLeft: 5, topRight: 5, bottomLeft: 0, bottomRight: 0 },
-                    barPercentage: 0.6,
-                    categoryPercentage: 0.65,
-                    stack: 'fund'
-                },
-                {
-                    label: 'מאוחדת',
-                    data: fundData.meuhedet,
-                    backgroundColor: colors.meuhedet,
-                    borderColor: 'white',
-                    borderWidth: { top: 0, bottom: 3, left: 0, right: 0 },
-                    borderSkipped: false,
-                    borderRadius: { topLeft: 5, topRight: 5, bottomLeft: 0, bottomRight: 0 },
-                    barPercentage: 0.6,
-                    categoryPercentage: 0.65,
-                    stack: 'fund'
-                },
-                {
-                    label: 'לאומית',
-                    data: fundData.leumit,
-                    backgroundColor: colors.leumit,
-                    borderColor: 'white',
-                    borderWidth: { top: 0, bottom: 3, left: 0, right: 0 },
-                    borderSkipped: false,
-                    borderRadius: { topLeft: 5, topRight: 5, bottomLeft: 0, bottomRight: 0 },
-                    barPercentage: 0.6,
-                    categoryPercentage: 0.65,
-                    stack: 'fund'
-                }
+                { label: 'מכבי', data: fundData.maccabi, backgroundColor: colors.maccabi, borderColor: 'white', borderWidth: { top: 3, bottom: 0, left: 0, right: 0 }, barPercentage: 0.6, categoryPercentage: 0.65, stack: 'fund' },
+                { label: 'כללית', data: fundData.clalit, backgroundColor: colors.clalit, borderColor: 'white', borderWidth: { top: 3, bottom: 0, left: 0, right: 0 }, barPercentage: 0.6, categoryPercentage: 0.65, stack: 'fund' },
+                { label: 'מאוחדת', data: fundData.meuhedet, backgroundColor: colors.meuhedet, borderColor: 'white', borderWidth: { top: 3, bottom: 0, left: 0, right: 0 }, barPercentage: 0.6, categoryPercentage: 0.65, stack: 'fund' },
+                { label: 'לאומית', data: fundData.leumit, backgroundColor: colors.leumit, borderRadius: { topLeft: 5, topRight: 5 }, barPercentage: 0.6, categoryPercentage: 0.65, stack: 'fund' }
             ]
         },
         options: {
@@ -584,10 +542,7 @@ function initMainCharts() {
             animation: barAnimation,
             interaction: { mode: 'index', intersect: false },
             plugins: {
-                legend: {
-                    position: 'bottom',
-                    labels: { usePointStyle: true }
-                },
+                legend: { position: 'bottom', labels: { usePointStyle: true } },
                 tooltip: {
                     callbacks: {
                         label: (ctx) => `${ctx.dataset.label}: ₪${ctx.raw.toLocaleString()}M`,
@@ -599,41 +554,11 @@ function initMainCharts() {
                 }
             },
             scales: {
-                x: {
-                    grid: { display: false },
-                    stacked: true
-                },
-                y: {
-                    stacked: true,
-                    grid: { color: '#F1F5F9' },
-                    ticks: {
-                        maxTicksLimit: 7,
-                        callback: (v) => `₪${(v/1000).toFixed(1)}B`
-                    }
-                }
+                x: { grid: { display: false }, stacked: true },
+                y: { stacked: true, grid: { color: '#F1F5F9' }, ticks: { maxTicksLimit: 7, callback: (v) => `₪${(v/1000).toFixed(1)}B` } }
             }
         }
     });
-    /* --- ORIGINAL LINE CHART (kept for rollback) ---
-    fundBalanceChart = new Chart(fundCtx, {
-        type: 'line',
-        data: {
-            labels: quarters,
-            datasets: [
-                { label: 'כללית', data: fundData.clalit, borderColor: colors.clalit, backgroundColor: colors.clalit, tension: 0.4, borderWidth: 3, pointRadius: 5, pointBackgroundColor: colors.clalit, pointBorderColor: 'white', pointBorderWidth: 2 },
-                { label: 'מכבי', data: fundData.maccabi, borderColor: colors.maccabi, backgroundColor: colors.maccabi, tension: 0.4, borderWidth: 3, pointRadius: 5, pointBackgroundColor: colors.maccabi, pointBorderColor: 'white', pointBorderWidth: 2 },
-                { label: 'מאוחדת', data: fundData.meuhedet, borderColor: colors.meuhedet, backgroundColor: colors.meuhedet, tension: 0.4, borderWidth: 3, pointRadius: 5, pointBackgroundColor: colors.meuhedet, pointBorderColor: 'white', pointBorderWidth: 2 },
-                { label: 'לאומית', data: fundData.leumit, borderColor: colors.leumit, backgroundColor: colors.leumit, tension: 0.4, borderWidth: 3, pointRadius: 5, pointBackgroundColor: colors.leumit, pointBorderColor: 'white', pointBorderWidth: 2 }
-            ]
-        },
-        options: {
-            responsive: true, maintainAspectRatio: false, animation: lineAnimation,
-            interaction: { mode: 'index', intersect: false },
-            plugins: { legend: { position: 'bottom', labels: { usePointStyle: true } }, tooltip: { callbacks: { label: (ctx) => `${ctx.dataset.label}: ₪${ctx.raw}M` } } },
-            scales: { x: { grid: { display: false } }, y: { grid: { color: '#F1F5F9' }, ticks: { maxTicksLimit: 7, callback: (v) => `₪${v}M` } } }
-        }
-    });
-    --- END ORIGINAL --- */
 
 // 2. Demographics Overview
 const demoCtx = document.getElementById('demographicsOverview').getContext('2d');
