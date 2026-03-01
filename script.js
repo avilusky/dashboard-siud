@@ -282,11 +282,11 @@ const frequencyByHmo = {
 };
 
 const frequencyByAdl = {
-    adl3: { label: 'ADL 3 ישן', data: [0.111, 0.113, 0.144, 0.162, 0.126, 0.004], color: '#3B82F6' },
-    adl3New: { label: 'ADL 3 כולל סוגרים', data: [0.016, 0.018, 0.026, 0.039, 0.045, 0.043], color: '#F59E0B' },
-    adl4: { label: 'ADL 4', data: [0.145, 0.155, 0.189, 0.195, 0.178, 0.208], color: '#9CA3AF' },
-    adl5: { label: 'תשישות נפש', data: [0.094, 0.098, 0.114, 0.124, 0.118, 0.112], color: '#EAB308' },
-    all: { label: 'ALL', data: [0.366, 0.383, 0.471, 0.514, 0.458, 0.364], color: '#84CC16' }
+    adl3: { label: 'ADL 3 ישן', data: [0.111, 0.113, 0.144, 0.162, 0.126, 0.004], color: '#F87171' },
+    adl3New: { label: 'ADL 3 כולל סוגרים', data: [0.016, 0.018, 0.026, 0.039, 0.045, 0.043], color: '#60A5FA' },
+    adl4: { label: 'ADL 4', data: [0.145, 0.155, 0.189, 0.195, 0.178, 0.208], color: '#10B981' },
+    adl5: { label: 'תשישות נפש', data: [0.094, 0.098, 0.114, 0.124, 0.118, 0.112], color: '#A78BFA' },
+    all: { label: 'ALL', data: [0.366, 0.383, 0.471, 0.514, 0.458, 0.364], color: '#475569' }
 };
 
 const profitData = {
@@ -1151,11 +1151,11 @@ function initAgeDistChart(year) {
     if (!ctx) return;
     if (ageDistChart) ageDistChart.destroy();
 
-    // Color gradient for bars - intensity by claim count
+    // Color gradient for bars - intensity based on claim count, using dashboard palette
     const maxClaims = Math.max(...data.claims);
     const barColors = data.claims.map(v => {
         const intensity = 0.3 + (v / maxClaims) * 0.7;
-        return `rgba(99, 102, 241, ${intensity})`;
+        return `rgba(16, 58, 151, ${intensity})`;
     });
 
     ageDistChart = new Chart(ctx.getContext('2d'), {
@@ -1175,13 +1175,13 @@ function initAgeDistChart(year) {
                     label: 'אחוז מצטבר',
                     data: data.cumPct,
                     type: 'line',
-                    borderColor: '#1E1B4B',
-                    backgroundColor: '#1E1B4B',
+                    borderColor: '#FDC509',
+                    backgroundColor: '#FDC509',
                     fill: false,
                     tension: 0.4,
                     borderWidth: 3,
                     pointRadius: 5,
-                    pointBackgroundColor: '#1E1B4B',
+                    pointBackgroundColor: '#FDC509',
                     pointBorderColor: 'white',
                     pointBorderWidth: 2,
                     yAxisID: 'y1',
@@ -2063,7 +2063,7 @@ function updateADLPolarChart() {
         '3 ADL ישן (לא מזכה כיום)': ['#FCA5A5', '#EF4444'],
         '3 ADL כולל סוגרים': ['#93C5FD', '#3B82F6'],
         '4 ADL': ['#6EE7B7', '#10B981'],
-        'תשישות נפש': ['#5EEAD4', '#14B8A6']
+        'תשישות נפש': ['#C4B5FD', '#8B5CF6']
     };
     
 // Dimensions

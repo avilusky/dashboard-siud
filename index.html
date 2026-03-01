@@ -507,11 +507,11 @@
                         <span class="adl-legend-dot"></span>
                         <span class="adl-legend-text">3 ADL כולל סוגרים</span>
                     </div>
-                    <div class="adl-legend-item" style="--legend-color: #34D399;">
+                    <div class="adl-legend-item" style="--legend-color: #10B981;">
                         <span class="adl-legend-dot"></span>
                         <span class="adl-legend-text">4 ADL</span>
                     </div>
-                    <div class="adl-legend-item" style="--legend-color: #36CEC4;">
+                    <div class="adl-legend-item" style="--legend-color: #A78BFA;">
                         <span class="adl-legend-dot"></span>
                         <span class="adl-legend-text">תשישות נפש</span>
                     </div>
@@ -526,31 +526,34 @@
 
 <!-- Age Distribution Tab -->
 <div class="tab-content" id="ageDistTab">
+    <div class="panel-summary" id="ageDistSummary">
+        <div class="panel-summary-item">
+            <span class="panel-summary-value" id="ageDistAvgAge">76.95</span>
+            <span class="panel-summary-label">גיל ממוצע</span>
+        </div>
+        <div class="panel-summary-item">
+            <span class="panel-summary-value" id="ageDistMedianAge">80</span>
+            <span class="panel-summary-label">גיל חציוני</span>
+        </div>
+        <div class="panel-summary-item">
+            <span class="panel-summary-value" id="ageDistTotal">18,241</span>
+            <span class="panel-summary-label">סה"כ תביעות</span>
+        </div>
+    </div>
     <div class="panel-grid">
         <div class="panel-card wide">
-            <!-- KPI Row -->
-            <div style="display: flex; justify-content: center; gap: 40px; margin-bottom: 20px;">
-                <div style="text-align: center; padding: 16px 32px; background: linear-gradient(135deg, #EEF2FF, #E0E7FF); border-radius: 16px; min-width: 140px;">
-                    <div id="ageDistAvgAge" style="font-size: 32px; font-weight: 800; color: #4338CA; line-height: 1;">76.95</div>
-                    <div style="font-size: 12px; color: #6366F1; margin-top: 6px; font-weight: 500;">גיל ממוצע</div>
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+                <div>
+                    <h3 style="font-size: 15px; font-weight: 600;">התפלגות תביעות לפי גיל</h3>
+                    <p style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">חלוקה באחוזים לפי קבוצת גיל</p>
                 </div>
-                <div style="text-align: center; padding: 16px 32px; background: linear-gradient(135deg, #FEF3C7, #FDE68A); border-radius: 16px; min-width: 140px;">
-                    <div id="ageDistMedianAge" style="font-size: 32px; font-weight: 800; color: #B45309; line-height: 1;">80</div>
-                    <div style="font-size: 12px; color: #D97706; margin-top: 6px; font-weight: 500;">גיל חציוני</div>
-                </div>
-                <div style="text-align: center; padding: 16px 32px; background: linear-gradient(135deg, #ECFDF5, #D1FAE5); border-radius: 16px; min-width: 140px;">
-                    <div id="ageDistTotal" style="font-size: 32px; font-weight: 800; color: #065F46; line-height: 1;">18,241</div>
-                    <div style="font-size: 12px; color: #059669; margin-top: 6px; font-weight: 500;">סה"כ תביעות</div>
+                <div class="year-buttons">
+                    <button class="year-btn age-dist-year-btn active" data-year="2022">2022</button>
+                    <button class="year-btn age-dist-year-btn" data-year="2023">2023</button>
+                    <button class="year-btn age-dist-year-btn" data-year="2024">2024</button>
+                    <button class="year-btn age-dist-year-btn" data-year="2025">2025</button>
                 </div>
             </div>
-            <!-- Year Buttons -->
-            <div style="display: flex; justify-content: center; gap: 8px; margin-bottom: 16px;">
-                <button class="treemap-view-btn age-dist-year-btn active" data-year="2022">2022</button>
-                <button class="treemap-view-btn age-dist-year-btn" data-year="2023">2023</button>
-                <button class="treemap-view-btn age-dist-year-btn" data-year="2024">2024</button>
-                <button class="treemap-view-btn age-dist-year-btn" data-year="2025">2025</button>
-            </div>
-            <!-- Chart -->
             <div class="panel-chart-container tall">
                 <canvas id="ageDistChart"></canvas>
             </div>
