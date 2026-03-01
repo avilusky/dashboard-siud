@@ -286,7 +286,7 @@ const frequencyByAdl = {
     adl3New: { label: 'ADL 3 כולל סוגרים', data: [0.016, 0.018, 0.026, 0.039, 0.045, 0.043], color: '#60A5FA' },
     adl4: { label: 'ADL 4', data: [0.145, 0.155, 0.189, 0.195, 0.178, 0.208], color: '#10B981' },
     adl5: { label: 'תשישות נפש', data: [0.094, 0.098, 0.114, 0.124, 0.118, 0.112], color: '#A78BFA' },
-    all: { label: 'ALL', data: [0.366, 0.383, 0.471, 0.514, 0.458, 0.364], color: '#475569' }
+    all: { label: 'ALL', data: [0.366, 0.383, 0.471, 0.514, 0.458, 0.364], color: '#94A3B8' }
 };
 
 const profitData = {
