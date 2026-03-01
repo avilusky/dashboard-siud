@@ -670,6 +670,8 @@ claimsOverviewChart = new Chart(claimsCtx, {
                 data: [22820, 25749, 23488, 18660],
                 backgroundColor: colors.clalit,
                 borderRadius: 6,
+                barPercentage: 0.5,
+                categoryPercentage: 0.6,
                 yAxisID: 'y',
                 order: 2
             },
