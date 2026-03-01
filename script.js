@@ -1787,6 +1787,8 @@ function initFundGrowthChart(fund = 'clalit') {
                     data: insuranceData,
                     backgroundColor: colors.clalit,
                     borderRadius: 4,
+                    barPercentage: 0.65,
+                    categoryPercentage: 0.7,
                     stack: 'stack1'
                 },
                 {
@@ -1794,6 +1796,8 @@ function initFundGrowthChart(fund = 'clalit') {
                     data: financeData,
                     backgroundColor: colors.leumit,
                     borderRadius: 4,
+                    barPercentage: 0.65,
+                    categoryPercentage: 0.7,
                     stack: 'stack1'
                 }
             ]
