@@ -166,6 +166,13 @@ box-shadow: 0 4px 24px rgba(16, 58, 151, 0.12);
     font-size: 13px;
 }
 
+.exec-summary-btn:hover {
+    background: rgba(16, 58, 151, 0.08);
+    border-color: #103A97;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(16, 58, 151, 0.15);
+}
+
 .last-update {
     display: flex;
     align-items: center;

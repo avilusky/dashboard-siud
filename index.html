@@ -23,9 +23,8 @@
 </div>
         </div>
         <div class="header-left">
-            <div class="period-selector">
-                <span class="period-label">תקופה:</span>
-                <span class="period-value">2022 - 2025</span>
+            <div class="period-selector exec-summary-btn" onclick="document.getElementById('execSummaryPanel').classList.add('active')" style="cursor: pointer; transition: all 0.2s ease;">
+                <span class="period-value">📋 תקציר מנהלים</span>
             </div>
             <div class="last-update">
                 <span class="update-dot"></span>
@@ -726,5 +725,120 @@
     z-index: 9999;
     box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 "></div>
+<!-- Executive Summary Panel -->
+<div class="drill-panel" id="execSummaryPanel">
+    <div class="panel-overlay" onclick="closePanel('execSummaryPanel')"></div>
+    <div class="panel-content" style="max-width: 900px;">
+        <div class="panel-header">
+            <div class="panel-title-group">
+                <h2 class="panel-title">תקציר מנהלים</h2>
+                <p class="panel-subtitle">ביטוח סיעודי קבוצתי | 2022 - 2025</p>
+            </div>
+            <button class="panel-close" onclick="closePanel('execSummaryPanel')">✕</button>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 20px; direction: rtl;">
+
+            <!-- Overview KPIs -->
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;">
+                <div style="background: linear-gradient(135deg, #103A97, #5C83E3); border-radius: 12px; padding: 16px; text-align: center; color: white;">
+                    <div style="font-size: 24px; font-weight: 800;">5.17M</div>
+                    <div style="font-size: 11px; opacity: 0.85; margin-top: 4px;">מבוטחים</div>
+                    <div style="font-size: 11px; margin-top: 6px; background: rgba(255,255,255,0.2); border-radius: 20px; padding: 2px 8px; display: inline-block;">+2% שנתי</div>
+                </div>
+                <div style="background: linear-gradient(135deg, #FDC509, #FD9802); border-radius: 12px; padding: 16px; text-align: center; color: #1a1a1a;">
+                    <div style="font-size: 24px; font-weight: 800;">₪10.8B</div>
+                    <div style="font-size: 11px; opacity: 0.75; margin-top: 4px;">יתרות קרנות</div>
+                    <div style="font-size: 11px; margin-top: 6px; background: rgba(0,0,0,0.1); border-radius: 20px; padding: 2px 8px; display: inline-block;">+401% שנתי</div>
+                </div>
+                <div style="background: linear-gradient(135deg, #36CEC4, #2AA89F); border-radius: 12px; padding: 16px; text-align: center; color: white;">
+                    <div style="font-size: 24px; font-weight: 800;">0.36%</div>
+                    <div style="font-size: 11px; opacity: 0.85; margin-top: 4px;">שכיחות תביעות</div>
+                    <div style="font-size: 11px; margin-top: 6px; background: rgba(255,255,255,0.2); border-radius: 20px; padding: 2px 8px; display: inline-block;">ירידה מ-0.46%</div>
+                </div>
+                <div style="background: linear-gradient(135deg, #5C83E3, #A0ECF7); border-radius: 12px; padding: 16px; text-align: center; color: #1a1a1a;">
+                    <div style="font-size: 24px; font-weight: 800;">64%</div>
+                    <div style="font-size: 11px; opacity: 0.75; margin-top: 4px;">אישור תביעות</div>
+                    <div style="font-size: 11px; margin-top: 6px; background: rgba(0,0,0,0.1); border-radius: 20px; padding: 2px 8px; display: inline-block;">+3% שנתי</div>
+                </div>
+            </div>
+
+            <!-- Section: Demographics -->
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 18px;">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+                    <div style="width: 4px; height: 20px; background: #103A97; border-radius: 4px;"></div>
+                    <h3 style="font-size: 14px; font-weight: 700; color: #1e293b; margin: 0;">הרכב דמוגרפי</h3>
+                </div>
+                <div style="font-size: 13px; color: #475569; line-height: 1.9;">
+                    ביטוח סיעוד קבוצתי בקופ"ח מונה <strong>5.17 מיליון מבוטחים</strong> עם צמיחה יציבה של 2% שנתי. כללית מובילה עם <strong>2.72M מבוטחים</strong> (53%), ואחריה מכבי <strong>1.67M</strong> (32%).
+                    ברמה שנתית, כ-<strong>277 אלף מצטרפים חדשים</strong> נכנסים לשוק.
+                    <br>התפלגות הגילאים מראה ש-<strong>43%</strong> מהמבוטחים בגילאי 0-19, בעוד קבוצת 70+ מהווה כ-<strong>10%</strong> מהמבוטחים אך מייצרת את מרבית התביעות.
+                </div>
+            </div>
+
+            <!-- Section: Claims Frequency -->
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 18px;">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+                    <div style="width: 4px; height: 20px; background: #36CEC4; border-radius: 4px;"></div>
+                    <h3 style="font-size: 14px; font-weight: 700; color: #1e293b; margin: 0;">שכיחות תביעות</h3>
+                </div>
+                <div style="font-size: 13px; color: #475569; line-height: 1.9;">
+                    <strong>מגמת ירידה חדה</strong> בשכיחות התביעות: מ-0.51% בשנת 2023 (שיא) ל-<strong>0.36%</strong> ב-2025 — ירידה של <strong>29%</strong>. המגמה עקבית בכל התרחישים.
+                    <br>שכיחות הראל ירדה משמעותית: מ-0.64% ב-2023 ל-0.50% ב-2024 ול-<strong>0.39%</strong> ב-2025 (ירידה מצטברת של 38%). שכיחות מנורה ירדה אף היא — מ-0.40% ב-2023 ל-0.44% ב-2024 ול-<strong>0.38%</strong> ב-2025, ירידה של 16% לעומת 2024 ושל 7% לעומת 2023.
+                    <br><strong>שינוי מבני ב-ADL:</strong> קריטריון ADL 3 ישן כבר אינו קיים ב-2025. שכיחות ADL 3 כולל סוגרים נותרה כמעט ללא שינוי. כל המעבר עבר ל-<strong>ADL 4 שקפץ ל-57%</strong> מכלל התביעות.
+                </div>
+            </div>
+
+            <!-- Section: Cancellation -->
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 18px;">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+                    <div style="width: 4px; height: 20px; background: #FD9802; border-radius: 4px;"></div>
+                    <h3 style="font-size: 14px; font-weight: 700; color: #1e293b; margin: 0;">שיעורי ביטולים</h3>
+                </div>
+                <div style="font-size: 13px; color: #475569; line-height: 1.9;">
+                    <strong>מגמת עלייה מתמשכת</strong> בשיעורי הביטולים בכל הקופות מאז 2021. מאוחדת ולאומית עם שיעורי הביטול הגבוהים ביותר, כפול מרמת 2021.
+                    מכבי חוותה את הזינוק החד ביותר, וכללית נותרה עם השיעור הנמוך ביותר אך גם היא במגמת עלייה עקבית.
+                </div>
+            </div>
+
+            <!-- Section: Fund Growth -->
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 18px;">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+                    <div style="width: 4px; height: 20px; background: #FDC509; border-radius: 4px;"></div>
+                    <h3 style="font-size: 14px; font-weight: 700; color: #1e293b; margin: 0;">קרנות מבוטחים</h3>
+                </div>
+                <div style="font-size: 13px; color: #475569; line-height: 1.9;">
+                    יתרות הקרנות צמחו ב-<strong>401%</strong> שנתי ל-<strong>₪10.8 מיליארד</strong>. מכבי מחזיקה את הנתח הגדול ביותר (<strong>₪8.13B</strong>, כ-75% מהשוק), כשכללית צומחת במהירות מ-₪421M ל-<strong>₪1.51B</strong>.
+                    <br>הצמיחה מונעת הן מפקטור ביטוח (פרמיות מול תביעות) והן מפקטור השקעות. כללית בולטת עם פקטור ביטוח חיובי חזק, בעוד מכבי נשענת בעיקר על פקטור השקעות — הנובע מהיקף הקרן הגדול שלה שמאפשר צבירת תשואות משמעותיות.
+                </div>
+            </div>
+
+            <!-- Section: Claims Approval -->
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 18px;">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+                    <div style="width: 4px; height: 20px; background: #E11D48; border-radius: 4px;"></div>
+                    <h3 style="font-size: 14px; font-weight: 700; color: #1e293b; margin: 0;">אישור תביעות</h3>
+                </div>
+                <div style="font-size: 13px; color: #475569; line-height: 1.9;">
+                    אחוז אישור התביעות בשוק עמד על <strong>64%</strong> ב-2025, עלייה קלה מ-62% ב-2024 אך עדיין בירידה ביחס ל-2022 (76%).
+                    הראל עם שיעור אישור של <strong>60%</strong>, מנורה עם שיעור גבוה יותר של <strong>69%</strong>.
+                </div>
+            </div>
+
+            <!-- Section: Age Distribution -->
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 18px;">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+                    <div style="width: 4px; height: 20px; background: #A78BFA; border-radius: 4px;"></div>
+                    <h3 style="font-size: 14px; font-weight: 700; color: #1e293b; margin: 0;">פרופיל גיל התביעות</h3>
+                </div>
+                <div style="font-size: 13px; color: #475569; line-height: 1.9;">
+                    קבוצות הגיל 70+ מהוות <strong>83%</strong> מכלל התביעות ב-2022, <strong>81%</strong> ב-2023, <strong>86%</strong> ב-2024 ו-<strong>87%</strong> ב-2025 — מגמת עלייה עקבית בריכוז התביעות בגילאים המבוגרים.
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
 </body>
 </html>
