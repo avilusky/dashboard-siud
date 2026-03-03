@@ -191,79 +191,92 @@ const approvalData = {
     menora: [73, 75, 65, 69]
 };
 
-// Demographic weights for cancellation age groups (total insured per group)
-const cancellationAgeWeights = {};
+// Per-HMO demographic weights for cancellation age groups
+// Each HMO uses its own population size per age group
+const cancellationHmoWeights = { clalit: {}, maccabi: {}, meuhedet: {}, leumit: {} };
+for (const hmo of ['clalit', 'maccabi', 'meuhedet', 'leumit']) {
+    // Split 0-19 into 0-10 and 10-20 (equal split per HMO)
+    const pop0to19 = demographicsData.ageGroups['0-19'][hmo];
+    cancellationHmoWeights[hmo]['0-10'] = Math.round(pop0to19 / 2);
+    cancellationHmoWeights[hmo]['10-20'] = pop0to19 - cancellationHmoWeights[hmo]['0-10'];
+}
 for (const [group, hmos] of Object.entries(demographicsData.ageGroups)) {
-    cancellationAgeWeights[group] = Object.values(hmos).reduce((a, b) => a + b, 0);
+    if (group === '0-19') continue;
+    for (const hmo of ['clalit', 'maccabi', 'meuhedet', 'leumit']) {
+        cancellationHmoWeights[hmo][group] = hmos[hmo];
+    }
 }
 
 const cancellationByAgeData = {
-    '0-19': {
-        clalit: [0.451, 0.453, 0.499, 0.700, 0.618],
-        maccabi: [0.379, 0.410, 0.397, 0.473, 0.631],
-        meuhedet: [2.840, 3.243, 2.850, 2.993, 3.046],
-        leumit: [0.677, 0.827, 0.639, 0.415, 0.485]
+    '0-10': {
+        clalit: [2.527, 2.409, 2.084, 2.530, 2.496],
+        maccabi: [2.566, 2.774, 2.816, 2.871, 3.248],
+        meuhedet: [4.563, 5.152, 3.857, 8.003, 8.951],
+        leumit: [9.809, 8.241, 6.829, 7.598, 7.167]
+    },
+    '10-20': {
+        clalit: [2.017, 1.838, 1.711, 2.443, 2.232],
+        maccabi: [1.115, 1.115, 1.066, 1.176, 1.419],
+        meuhedet: [7.550, 8.175, 7.231, 8.711, 9.348],
+        leumit: [6.119, 5.425, 4.555, 5.373, 5.140]
     },
     '20-29': {
-        clalit: [2.047, 2.306, 2.480, 2.971, 2.982],
-        maccabi: [0.930, 1.074, 0.952, 1.027, 1.402],
-        meuhedet: [2.292, 2.549, 2.510, 2.269, 2.608],
-        leumit: [2.231, 3.326, 3.210, 2.515, 3.892]
+        clalit: [3.912, 3.973, 3.969, 4.834, 4.666],
+        maccabi: [2.034, 2.229, 2.073, 2.033, 2.441],
+        meuhedet: [6.749, 5.752, 4.934, 6.340, 6.050],
+        leumit: [9.564, 9.143, 7.808, 7.843, 8.461]
     },
     '30-39': {
-        clalit: [1.050, 1.235, 1.446, 1.786, 2.083],
-        maccabi: [1.176, 1.271, 1.169, 1.394, 1.790],
-        meuhedet: [1.731, 1.892, 1.825, 1.744, 2.167],
-        leumit: [1.455, 2.443, 2.359, 1.849, 2.701]
+        clalit: [2.820, 2.747, 2.727, 3.476, 3.739],
+        maccabi: [2.450, 2.642, 2.602, 2.700, 3.112],
+        meuhedet: [6.185, 5.187, 4.221, 5.912, 6.004],
+        leumit: [8.026, 7.452, 6.533, 6.760, 7.299]
     },
     '40-49': {
-        clalit: [0.850, 0.937, 1.191, 1.383, 1.563],
-        maccabi: [0.690, 0.850, 0.771, 1.131, 1.442],
-        meuhedet: [1.011, 1.353, 1.340, 1.486, 1.670],
-        leumit: [1.333, 2.396, 2.097, 1.791, 2.411]
+        clalit: [1.999, 1.881, 1.954, 2.441, 2.522],
+        maccabi: [1.233, 1.410, 1.383, 1.677, 2.005],
+        meuhedet: [3.616, 3.203, 2.718, 3.552, 3.727],
+        leumit: [5.386, 5.468, 4.425, 4.582, 5.083]
     },
     '50-59': {
-        clalit: [0.680, 0.810, 1.141, 1.589, 1.536],
-        maccabi: [0.439, 0.479, 0.423, 0.747, 1.046],
-        meuhedet: [0.732, 0.900, 0.834, 1.006, 1.383],
-        leumit: [1.067, 1.434, 1.552, 1.388, 1.954]
+        clalit: [1.290, 1.380, 1.615, 2.172, 2.149],
+        maccabi: [0.740, 0.750, 0.705, 0.999, 1.291],
+        meuhedet: [2.689, 2.129, 1.709, 2.336, 2.422],
+        leumit: [3.705, 3.250, 3.035, 3.131, 3.506]
     },
     '60-69': {
-        clalit: [0.375, 0.413, 0.709, 1.132, 1.027],
-        maccabi: [0.325, 0.400, 0.382, 0.681, 1.029],
-        meuhedet: [0.511, 0.584, 0.576, 0.719, 1.051],
-        leumit: [0.542, 0.654, 0.925, 0.824, 1.296]
+        clalit: [0.718, 0.733, 0.906, 1.428, 1.353],
+        maccabi: [0.490, 0.584, 0.568, 0.861, 1.182],
+        meuhedet: [2.212, 1.439, 1.262, 1.656, 1.795],
+        leumit: [2.335, 2.160, 2.007, 2.045, 2.280]
     },
     '70-79': {
-        clalit: [0.177, 0.213, 0.364, 0.652, 0.686],
-        maccabi: [0.293, 0.325, 0.292, 0.484, 0.823],
-        meuhedet: [0.356, 0.402, 0.482, 0.441, 0.609],
-        leumit: [0.402, 0.430, 0.561, 0.632, 0.902]
+        clalit: [0.407, 0.395, 0.511, 0.852, 0.887],
+        maccabi: [0.400, 0.483, 0.434, 0.620, 0.959],
+        meuhedet: [1.968, 1.120, 1.162, 1.242, 1.068],
+        leumit: [1.825, 1.500, 1.395, 1.324, 1.640]
     },
     '80-89': {
-        clalit: [0.158, 0.106, 0.169, 0.308, 0.343],
-        maccabi: [0.436, 0.389, 0.237, 0.438, 0.522],
-        meuhedet: [0.513, 0.376, 0.259, 0.269, 0.493],
-        leumit: [0.270, 0.168, 0.247, 0.313, 0.454]
+        clalit: [0.283, 0.217, 0.336, 0.440, 0.489],
+        maccabi: [0.535, 0.486, 0.340, 0.524, 0.656],
+        meuhedet: [2.191, 0.936, 0.709, 0.847, 0.919],
+        leumit: [1.279, 1.405, 1.021, 0.926, 0.816]
     },
     '90+': {
-        clalit: [0.345, 0.216, 0.201, 0.354, 0.286],
-        maccabi: [0.921, 0.646, 0.361, 0.342, 0.641],
-        meuhedet: [0.622, 0.460, 0.937, 0.188, 0.370],
-        leumit: [0.166, 0.274, 0.116, 0.000, 0.837]
+        clalit: [0.428, 0.350, 0.322, 0.530, 0.454],
+        maccabi: [1.016, 0.678, 0.421, 0.399, 0.672],
+        meuhedet: [2.727, 0.919, 1.535, 0.811, 0.370],
+        leumit: [0.828, 1.363, 0.695, 0.109, 1.392]
     }
 };
 
-// Compute cancellationYearlyData as weighted average from age group data (same as drill-down)
-const allAgeGroups = Object.keys(cancellationByAgeData);
-const totalWeight = allAgeGroups.reduce((acc, g) => acc + cancellationAgeWeights[g], 0);
-const cancellationYearlyData = {};
-['clalit', 'maccabi', 'meuhedet', 'leumit'].forEach(hmo => {
-    cancellationYearlyData[hmo] = [0, 1, 2, 3, 4].map(i => {
-        const weightedSum = allAgeGroups.reduce((acc, g) => acc + cancellationByAgeData[g][hmo][i] * cancellationAgeWeights[g], 0);
-        return parseFloat((weightedSum / totalWeight).toFixed(3));
-    });
-});
+// Cancellation yearly data - exact totals from source data per HMO
+const cancellationYearlyData = {
+    clalit: [2.124, 2.074, 2.038, 2.635, 2.609],
+    maccabi: [1.525, 1.679, 1.625, 1.772, 2.110],
+    meuhedet: [5.664, 5.530, 4.679, 6.061, 6.307],
+    leumit: [6.665, 6.085, 5.212, 5.721, 5.808]
+};
 
 // ===== FREQUENCY DATA =====
 const frequencyYears = ['2020', '2021', '2022', '2023', '2024', '2025'];
@@ -276,10 +289,31 @@ const frequencyByScenario = {
 };
 
 const frequencyByHmo = {
-    clalitHarel: { label: 'שכיחות כללית', data: [0.447, 0.461, 0.574, 0.635, 0.501, 0.393] },
-    withoutClalit: { label: 'שכיחות ללא כללית', data: [0.281, 0.303, 0.369, 0.402, 0.444, 0.375] },
-    total: { label: 'שכיחות כל השוק', data: [0.366, 0.383, 0.471, 0.514, 0.458, 0.364] }
+    clalit: { label: 'שכיחות כללית', data: [0.447, 0.461, 0.574, 0.635, 0.501, 0.393], color: '#103A97' },
+    maccabi: { label: 'שכיחות מכבי', data: [0.294, 0.308, 0.354, 0.367, 0.434, 0.370], color: '#FDC509' },
+    leumit: { label: 'שכיחות לאומית', data: [0.350, 0.391, 0.513, 0.551, 0.532, 0.431], color: '#36CEC4' },
+    meuhedet: { label: 'שכיחות מאוחדת', data: [0.208, 0.240, 0.334, 0.423, 0.426, 0.359], color: '#5C83E3' },
+    total: { label: 'שכיחות כל השוק', data: [0.366, 0.383, 0.471, 0.514, 0.458, 0.364], color: '#9CA3AF' }
 };
+
+// Frequency by age group (conservative extreme scenario) - total market
+const frequencyByAge = {
+    '0-19': [0.014, 0.019, 0.030, 0.073, 0.022, 0.009],
+    '20-29': [0.009, 0.009, 0.009, 0.009, 0.008, 0.004],
+    '30-39': [0.016, 0.018, 0.015, 0.020, 0.016, 0.012],
+    '40-49': [0.047, 0.042, 0.053, 0.042, 0.038, 0.031],
+    '50-59': [0.124, 0.115, 0.130, 0.127, 0.118, 0.087],
+    '60-69': [0.498, 0.517, 0.604, 0.631, 0.562, 0.419],
+    '70-79': [1.830, 1.898, 2.488, 2.614, 2.416, 1.734],
+    '80-89': [6.780, 7.218, 8.948, 9.486, 8.995, 6.986],
+    '90+': [14.899, 15.311, 16.955, 18.098, 19.813, 18.478]
+};
+
+// Weights for frequency age groups (total insured per age group from demographics)
+const frequencyAgeWeights = {};
+for (const [group, hmos] of Object.entries(demographicsData.ageGroups)) {
+    frequencyAgeWeights[group] = Object.values(hmos).reduce((a, b) => a + b, 0);
+}
 
 const frequencyByAdl = {
     adl3: { label: 'ADL 3 ישן', data: [0.111, 0.113, 0.144, 0.162, 0.126, 0.004], color: '#F87171' },
@@ -315,7 +349,7 @@ let profitOverviewChart;
 
 // Panel charts
 let newMembersChart, cancellationChart;
-let scenariosChart = null, hmoFrequencyChart = null, adlFrequencyChart = null;
+let scenariosChart = null, hmoFrequencyChart = null, adlFrequencyChart = null, ageFrequencyChart = null;
 
 let insuranceProfitTrendChart, insuranceComparisonChart, premiumVsClaimsChart;
 let hmoProfitTrendChart, hmoComparisonChart, managementFeesChart;
@@ -914,6 +948,7 @@ datasets: [
             responsive: true,
             maintainAspectRatio: false,
             animation: lineAnimation,
+            interaction: { mode: 'index', intersect: false },
             plugins: { legend: { position: 'bottom' } },
             scales: {
                 x: { grid: { display: false } },
@@ -925,7 +960,7 @@ datasets: [
         }
     });
 
-    
+
 // Cancellation Rate - Yearly
 const cancellationCtx = document.getElementById('cancellationChart').getContext('2d');
 if (cancellationChart) cancellationChart.destroy();
@@ -945,7 +980,15 @@ cancellationChart = new Chart(cancellationCtx, {
         responsive: true,
         maintainAspectRatio: false,
         animation: lineAnimation,
-        plugins: { legend: { position: 'bottom' } },
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+            legend: { position: 'bottom' },
+            tooltip: {
+                callbacks: {
+                    label: (ctx) => `${ctx.dataset.label}: ${parseFloat(ctx.raw).toFixed(2)}%`
+                }
+            }
+        },
         scales: {
             x: { grid: { display: false } },
             y: {
@@ -1049,15 +1092,127 @@ function initHmoFrequencyChart() {
     if (!ctx) return;
     if (hmoFrequencyChart) hmoFrequencyChart.destroy();
 
+    const hmoKeys = Object.keys(frequencyByHmo);
+    const hmoDatasets = hmoKeys.map(key => ({
+        label: frequencyByHmo[key].label,
+        data: frequencyByHmo[key].data,
+        borderColor: frequencyByHmo[key].color,
+        backgroundColor: frequencyByHmo[key].color,
+        fill: false,
+        tension: 0.4,
+        borderWidth: key === 'total' ? 4 : 2.5,
+        pointRadius: 5,
+        pointBackgroundColor: frequencyByHmo[key].color,
+        pointBorderColor: 'white',
+        pointBorderWidth: 2,
+        borderDash: key === 'total' ? [6, 3] : []
+    }));
+
     hmoFrequencyChart = new Chart(ctx.getContext('2d'), {
         type: 'line',
         data: {
             labels: frequencyYears,
-            datasets: [
-                { label: frequencyByHmo.clalitHarel.label, data: frequencyByHmo.clalitHarel.data, borderColor: '#3B82F6', backgroundColor: '#3B82F6', fill: false, tension: 0.4, borderWidth: 3, pointRadius: 5, pointBackgroundColor: '#3B82F6', pointBorderColor: 'white', pointBorderWidth: 2 },
-                { label: frequencyByHmo.withoutClalit.label, data: frequencyByHmo.withoutClalit.data, borderColor: '#F59E0B', backgroundColor: '#F59E0B', fill: false, tension: 0.4, borderWidth: 3, pointRadius: 5, pointBackgroundColor: '#F59E0B', pointBorderColor: 'white', pointBorderWidth: 2 },
-                { label: frequencyByHmo.total.label, data: frequencyByHmo.total.data, borderColor: '#9CA3AF', backgroundColor: '#9CA3AF', fill: false, tension: 0.4, borderWidth: 3, pointRadius: 5, pointBackgroundColor: '#9CA3AF', pointBorderColor: 'white', pointBorderWidth: 2 }
-            ]
+            datasets: hmoDatasets
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: lineAnimation,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: { position: 'bottom', labels: { usePointStyle: true } },
+                tooltip: {
+                    callbacks: {
+                        label: (ctx) => `${ctx.dataset.label}: ${ctx.raw.toFixed(2)}%`
+                    }
+                },
+                datalabels: { display: false }
+            },
+            scales: {
+                x: { grid: { display: false } },
+                y: {
+                    grid: { color: '#F1F5F9' },
+                    ticks: { callback: (v) => v.toFixed(2) + '%' }
+                }
+            }
+        }
+    });
+}
+
+function initAgeFrequencyChart(selectedGroups) {
+    if (!selectedGroups) {
+        selectedGroups = Array.from(document.querySelectorAll('.freq-age-nav-btn.active')).map(b => b.dataset.age);
+    }
+    if (selectedGroups.length === 0) return;
+
+    // Update subtitle
+    const subtitleEl = document.getElementById('ageFreqSubtitle');
+    if (subtitleEl) {
+        subtitleEl.textContent = selectedGroups.length === Object.keys(frequencyByAge).length
+            ? 'קבוצות גיל: הכל (ממוצע משוקלל)'
+            : `קבוצות גיל: ${selectedGroups.join(', ')} (ממוצע משוקלל)`;
+    }
+
+    // Calculate weighted average across selected age groups
+    const totalWeight = selectedGroups.reduce((acc, g) => acc + frequencyAgeWeights[g], 0);
+    const combinedData = frequencyYears.map((_, i) => {
+        const weightedSum = selectedGroups.reduce((acc, g) => acc + frequencyByAge[g][i] * frequencyAgeWeights[g], 0);
+        return parseFloat((weightedSum / totalWeight).toFixed(3));
+    });
+
+    // Build individual datasets for each selected group
+    const ageColors = {
+        '0-19': '#94A3B8', '20-29': '#A78BFA', '30-39': '#818CF8',
+        '40-49': '#60A5FA', '50-59': '#38BDF8', '60-69': '#2DD4BF',
+        '70-79': '#F59E0B', '80-89': '#F97316', '90+': '#EF4444'
+    };
+
+    const datasets = [];
+
+    // Individual age group lines for each selected group
+    selectedGroups.forEach(group => {
+        datasets.push({
+            label: group,
+            data: frequencyByAge[group],
+            borderColor: ageColors[group],
+            backgroundColor: ageColors[group],
+            fill: false,
+            tension: 0.4,
+            borderWidth: 2.5,
+            pointRadius: 4,
+            pointBackgroundColor: ageColors[group],
+            pointBorderColor: 'white',
+            pointBorderWidth: 2
+        });
+    });
+
+    // Weighted average line (only when more than 1 group selected)
+    if (selectedGroups.length > 1) {
+        datasets.push({
+            label: 'ממוצע משוקלל',
+            data: combinedData,
+            borderColor: '#1e293b',
+            backgroundColor: '#1e293b',
+            fill: false,
+            tension: 0.4,
+            borderWidth: 4,
+            pointRadius: 6,
+            pointBackgroundColor: '#1e293b',
+            pointBorderColor: 'white',
+            pointBorderWidth: 2,
+            borderDash: [6, 3]
+        });
+    }
+
+    const ctx = document.getElementById('ageFrequencyChart');
+    if (!ctx) return;
+    if (ageFrequencyChart) ageFrequencyChart.destroy();
+
+    ageFrequencyChart = new Chart(ctx.getContext('2d'), {
+        type: 'line',
+        data: {
+            labels: frequencyYears,
+            datasets: datasets
         },
         options: {
             responsive: true,
@@ -1467,6 +1622,8 @@ document.querySelectorAll('.panel-tab[data-tab]').forEach(tab => {
             setTimeout(() => initScenariosChart(), 100);
         } else if (tabId === 'hmoFreq') {
             setTimeout(() => initHmoFrequencyChart(), 100);
+        } else if (tabId === 'ageFreq') {
+            setTimeout(() => initAgeFrequencyChart(), 100);
         } else if (tabId === 'adl') {
             setTimeout(() => {
                 initAdlFrequencyChart();
@@ -1555,10 +1712,32 @@ document.querySelectorAll('.age-dist-year-btn').forEach(btn => {
         });
     });
 
-// Treemap/Bar view buttons (excluding cancellation age buttons)
-    document.querySelectorAll('.treemap-view-btn:not(.cancel-age-nav-btn)').forEach(btn => {
+    // Frequency Age Navigation buttons - click = single select, Ctrl+click = multi-select
+    document.querySelectorAll('.freq-age-nav-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            if (e.ctrlKey) {
+                btn.classList.toggle('active');
+            } else {
+                document.querySelectorAll('.freq-age-nav-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            }
+
+            const selectedGroups = Array.from(document.querySelectorAll('.freq-age-nav-btn.active'))
+                .map(b => b.dataset.age);
+
+            if (selectedGroups.length === 0) {
+                btn.classList.add('active');
+                selectedGroups.push(btn.dataset.age);
+            }
+
+            initAgeFrequencyChart(selectedGroups);
+        });
+    });
+
+// Treemap/Bar view buttons (excluding cancellation age and freq age buttons)
+    document.querySelectorAll('.treemap-view-btn:not(.cancel-age-nav-btn):not(.freq-age-nav-btn)').forEach(btn => {
         btn.addEventListener('click', () => {
-            document.querySelectorAll('.treemap-view-btn:not(.cancel-age-nav-btn)').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.treemap-view-btn:not(.cancel-age-nav-btn):not(.freq-age-nav-btn)').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             if (currentChartType === 'treemap') {
                 initTreemap(btn.dataset.view);
@@ -1874,26 +2053,15 @@ function updateCancellationAgeCharts(selectedGroups) {
 }
 
 function initCancellationAgeCharts(selectedGroups) {
-    // Calculate weighted average across selected age groups (weighted by demographic size)
-    const totalWeight = selectedGroups.reduce((acc, g) => acc + cancellationAgeWeights[g], 0);
-    const combinedData = {
-        clalit: years.map((_, i) => {
-            const weightedSum = selectedGroups.reduce((acc, g) => acc + cancellationByAgeData[g].clalit[i] * cancellationAgeWeights[g], 0);
-            return (weightedSum / totalWeight).toFixed(3);
-        }),
-        maccabi: years.map((_, i) => {
-            const weightedSum = selectedGroups.reduce((acc, g) => acc + cancellationByAgeData[g].maccabi[i] * cancellationAgeWeights[g], 0);
-            return (weightedSum / totalWeight).toFixed(3);
-        }),
-        meuhedet: years.map((_, i) => {
-            const weightedSum = selectedGroups.reduce((acc, g) => acc + cancellationByAgeData[g].meuhedet[i] * cancellationAgeWeights[g], 0);
-            return (weightedSum / totalWeight).toFixed(3);
-        }),
-        leumit: years.map((_, i) => {
-            const weightedSum = selectedGroups.reduce((acc, g) => acc + cancellationByAgeData[g].leumit[i] * cancellationAgeWeights[g], 0);
-            return (weightedSum / totalWeight).toFixed(3);
-        })
-    };
+    // Calculate weighted average per HMO using each HMO's own population weights
+    const combinedData = {};
+    for (const hmo of ['clalit', 'maccabi', 'meuhedet', 'leumit']) {
+        const hmoTotalWeight = selectedGroups.reduce((acc, g) => acc + cancellationHmoWeights[hmo][g], 0);
+        combinedData[hmo] = years.map((_, i) => {
+            const weightedSum = selectedGroups.reduce((acc, g) => acc + cancellationByAgeData[g][hmo][i] * cancellationHmoWeights[hmo][g], 0);
+            return (weightedSum / hmoTotalWeight).toFixed(3);
+        });
+    }
 
     // Extract latest and previous values for charts
     const latestClalit = parseFloat(combinedData.clalit[4]);
@@ -1931,7 +2099,14 @@ function initCancellationAgeCharts(selectedGroups) {
                 maintainAspectRatio: false,
                 animation: lineAnimation,
                 interaction: { mode: 'index', intersect: false },
-                plugins: { legend: { position: 'bottom' } },
+                plugins: {
+                    legend: { position: 'bottom' },
+                    tooltip: {
+                        callbacks: {
+                            label: (ctx) => `${ctx.dataset.label}: ${parseFloat(ctx.raw).toFixed(2)}%`
+                        }
+                    }
+                },
 scales: {
                     x: { grid: { display: false } },
                     y: {
@@ -1965,7 +2140,14 @@ scales: {
                 responsive: true,
                 maintainAspectRatio: false,
                 animation: barAnimation,
-                plugins: { legend: { display: false } },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: (ctx) => `${ctx.dataset.label}: ${parseFloat(ctx.raw).toFixed(2)}%`
+                        }
+                    }
+                },
 scales: {
                     x: { grid: { display: false } },
                     y: {
