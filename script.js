@@ -707,6 +707,14 @@ function initMainCharts() {
             maintainAspectRatio: false,
             animation: barAnimation,
             interaction: { mode: 'index', intersect: false },
+            onClick: (evt, elements, chart) => {
+                if (elements.length > 0) {
+                    const dsIndex = elements[0].datasetIndex;
+                    const meta = chart.getDatasetMeta(dsIndex);
+                    meta.hidden = meta.hidden === null ? true : !meta.hidden;
+                    chart.update();
+                }
+            },
             plugins: {
                 legend: { position: 'bottom', labels: { usePointStyle: true } },
                 tooltip: {
