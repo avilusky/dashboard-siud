@@ -1589,6 +1589,7 @@ function initAgeDistChart(year) {
                     type: 'linear',
                     display: true,
                     position: 'right',
+                    grace: '15%',
                     title: { display: true, text: 'כמות תביעות', font: { size: 11 } },
                     grid: { color: '#F1F5F9' },
                     ticks: {
