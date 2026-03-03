@@ -413,6 +413,41 @@ const claimsAgeDistData = {
 };
 let ageDistChart = null;
 let currentAgeDistYear = '2022';
+const hiddenClaimsAgeGroups = new Set();
+
+function updateClaimsDistHiddenBar() {
+    const bar = document.getElementById('claimsDistHiddenBar');
+    if (!bar) return;
+    if (hiddenClaimsAgeGroups.size === 0) {
+        bar.style.display = 'none';
+        return;
+    }
+    bar.style.display = 'flex';
+    bar.innerHTML = '<span style="font-weight: 600; color: #475569;">מוסתרות:</span>';
+    hiddenClaimsAgeGroups.forEach(age => {
+        const chip = document.createElement('span');
+        chip.style.cssText = 'background: rgba(16, 58, 151, 0.7); color: white; padding: 3px 10px; border-radius: 12px; cursor: pointer; font-size: 11px; font-weight: 500; transition: opacity 0.2s;';
+        chip.textContent = age + ' ✕';
+        chip.title = 'לחץ להציג חזרה';
+        chip.addEventListener('mouseenter', () => chip.style.opacity = '0.7');
+        chip.addEventListener('mouseleave', () => chip.style.opacity = '1');
+        chip.addEventListener('click', () => {
+            hiddenClaimsAgeGroups.delete(age);
+            initAgeDistChart();
+        });
+        bar.appendChild(chip);
+    });
+    const resetBtn = document.createElement('span');
+    resetBtn.style.cssText = 'background: #e2e8f0; color: #475569; padding: 3px 10px; border-radius: 12px; cursor: pointer; font-size: 11px; font-weight: 600; transition: opacity 0.2s;';
+    resetBtn.textContent = 'הצג הכל';
+    resetBtn.addEventListener('mouseenter', () => resetBtn.style.opacity = '0.7');
+    resetBtn.addEventListener('mouseleave', () => resetBtn.style.opacity = '1');
+    resetBtn.addEventListener('click', () => {
+        hiddenClaimsAgeGroups.clear();
+        initAgeDistChart();
+    });
+    bar.appendChild(resetBtn);
+}
 
 // ===== TREEMAP =====
 const treemapColors = {
@@ -993,7 +1028,7 @@ cancellationChart = new Chart(cancellationCtx, {
             x: { grid: { display: false } },
             y: {
                 grid: { color: '#F1F5F9' },
-                ticks: { callback: (v) => v.toFixed(1) + '%' }
+                ticks: { callback: (v) => Math.round(v) + '%' }
             }
         }
     }
@@ -1149,8 +1184,8 @@ function initAgeFrequencyChart(selectedGroups) {
     const subtitleEl = document.getElementById('ageFreqSubtitle');
     if (subtitleEl) {
         subtitleEl.textContent = selectedGroups.length === Object.keys(frequencyByAge).length
-            ? 'קבוצות גיל: הכל (ממוצע משוקלל)'
-            : `קבוצות גיל: ${selectedGroups.join(', ')} (ממוצע משוקלל)`;
+            ? 'קבוצות גיל: הכל'
+            : `קבוצות גיל: ${selectedGroups.join(', ')}`;
     }
 
     // Calculate weighted average across selected age groups
@@ -1232,7 +1267,7 @@ function initAgeFrequencyChart(selectedGroups) {
                 x: { grid: { display: false } },
                 y: {
                     grid: { color: '#F1F5F9' },
-                    ticks: { callback: (v) => v.toFixed(2) + '%' }
+                    ticks: { callback: (v) => Math.round(v) + '%' }
                 }
             }
         }
@@ -1293,12 +1328,20 @@ function initAdlFrequencyChart() {
 // ===== CLAIMS AGE DISTRIBUTION CHART =====
 function initAgeDistChart(year) {
     currentAgeDistYear = year || currentAgeDistYear;
-    const data = claimsAgeDistData[currentAgeDistYear];
+    const fullData = claimsAgeDistData[currentAgeDistYear];
 
     // Update KPIs
-    document.getElementById('ageDistAvgAge').textContent = data.avgAge.toFixed(1);
-    document.getElementById('ageDistMedianAge').textContent = data.medianAge;
-    document.getElementById('ageDistTotal').textContent = data.total.toLocaleString();
+    document.getElementById('ageDistAvgAge').textContent = fullData.avgAge.toFixed(1);
+    document.getElementById('ageDistMedianAge').textContent = fullData.medianAge;
+    document.getElementById('ageDistTotal').textContent = fullData.total.toLocaleString();
+
+    // Filter out hidden age groups
+    const visibleIndices = fullData.labels.map((l, i) => hiddenClaimsAgeGroups.has(l) ? -1 : i).filter(i => i !== -1);
+    const data = {
+        labels: visibleIndices.map(i => fullData.labels[i]),
+        claims: visibleIndices.map(i => fullData.claims[i]),
+        pct: visibleIndices.map(i => fullData.pct[i])
+    };
 
     // Update year buttons
     document.querySelectorAll('.age-dist-year-btn').forEach(btn => {
@@ -1330,8 +1373,21 @@ function initAgeDistChart(year) {
                     order: 2
                 },
                 {
-                    label: 'אחוז מצטבר',
-                    data: data.cumPct,
+                    label: 'שכיחות תביעות',
+                    data: (() => {
+                        const yearIndex = frequencyYears.indexOf(currentAgeDistYear);
+                        if (yearIndex === -1) return data.labels.map(() => null);
+                        const mapping = {
+                            '0-10': '0-19', '10-20': '0-19',
+                            '20-30': '20-29', '30-40': '30-39', '40-50': '40-49',
+                            '50-60': '50-59', '60-70': '60-69', '70-80': '70-79',
+                            '80-90': '80-89', '90+': '90+'
+                        };
+                        return data.labels.map(label => {
+                            const freqGroup = mapping[label];
+                            return freqGroup ? frequencyByAge[freqGroup][yearIndex] : null;
+                        });
+                    })(),
                     type: 'line',
                     borderColor: '#FDC509',
                     backgroundColor: '#FDC509',
@@ -1351,6 +1407,13 @@ function initAgeDistChart(year) {
             responsive: true,
             maintainAspectRatio: false,
             interaction: { mode: 'index', intersect: false },
+            onClick: (evt, elements) => {
+                if (elements.length > 0) {
+                    const label = data.labels[elements[0].index];
+                    hiddenClaimsAgeGroups.add(label);
+                    initAgeDistChart();
+                }
+            },
             plugins: {
                 legend: {
                     position: 'bottom',
@@ -1360,11 +1423,13 @@ function initAgeDistChart(year) {
                     callbacks: {
                         label: (ctx) => {
                             if (ctx.dataset.yAxisID === 'y1') {
-                                return `${ctx.dataset.label}: ${ctx.raw.toFixed(1)}%`;
+                                const v = ctx.raw;
+                                return `${ctx.dataset.label}: ${v >= 1 ? Math.round(v) : v}%`;
                             }
                             const pct = data.pct[ctx.dataIndex];
-                            return `${ctx.dataset.label}: ${ctx.raw.toLocaleString()} (${pct}%)`;
-                        }
+                            return `${ctx.dataset.label}: ${ctx.raw.toLocaleString()} (${Math.round(pct)}%)`;
+                        },
+                        afterBody: () => '(לחץ להסתרה)'
                     }
                 },
                 datalabels: {
@@ -1405,9 +1470,8 @@ function initAgeDistChart(year) {
                     type: 'linear',
                     display: true,
                     position: 'left',
-                    min: 0,
-                    max: 100,
-                    title: { display: true, text: 'אחוז מצטבר', font: { size: 11 } },
+                    beginAtZero: true,
+                    title: { display: true, text: 'שכיחות תביעות %', font: { size: 11 } },
                     grid: { display: false },
                     ticks: { callback: (v) => v + '%' }
                 }
@@ -1415,6 +1479,7 @@ function initAgeDistChart(year) {
         },
         plugins: [ChartDataLabels]
     });
+    updateClaimsDistHiddenBar();
 }
 
 // ===== PROFIT PANEL CHARTS =====
@@ -2111,7 +2176,7 @@ scales: {
                     x: { grid: { display: false } },
                     y: {
                         grid: { color: '#F1F5F9' },
-                        ticks: { callback: (v) => parseFloat(v).toFixed(1) + '%' }
+                        ticks: { callback: (v) => Math.round(v) + '%' }
                     }
                 }
             }
@@ -2152,7 +2217,7 @@ scales: {
                     x: { grid: { display: false } },
                     y: {
                         grid: { color: '#F1F5F9' },
-                        ticks: { callback: (v) => parseFloat(v).toFixed(1) + '%' }
+                        ticks: { callback: (v) => Math.round(v) + '%' }
                     }
                 }
             }
