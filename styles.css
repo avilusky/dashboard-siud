@@ -484,13 +484,16 @@ box-shadow:
     right: 0;
     bottom: 0;
     z-index: 1000;
-    display: none;
+    visibility: hidden;
+    pointer-events: none;
+    display: flex;
     align-items: center;
     justify-content: center;
 }
 
 .drill-panel.active {
-    display: flex;
+    visibility: visible;
+    pointer-events: auto;
 }
 
 .panel-overlay {
@@ -502,41 +505,58 @@ box-shadow:
     background: linear-gradient(135deg, rgba(15, 23, 42, 0.4) 0%, rgba(30, 41, 59, 0.5) 100%);
     backdrop-filter: blur(12px) saturate(120%);
     -webkit-backdrop-filter: blur(12px) saturate(120%);
-    animation: fadeIn 0.3s ease;
+    opacity: 0;
+    transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+.drill-panel.active .panel-overlay {
+    opacity: 1;
 }
 
 .panel-content {
-    position: relative;
-    width: 95%;
-    max-width: 1400px;
-    max-height: 90vh;
+    position: fixed;
     background: #ffffff;
+    padding: 0;
+    overflow: hidden;
+    opacity: 0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 1;
+}
+
+.drill-panel.active .panel-content {
+    opacity: 1;
+}
+
+.drill-panel.expanded .panel-content {
     border-radius: 28px;
     padding: 36px 40px;
     overflow-y: auto;
-    animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-    box-shadow: 
+    box-shadow:
         0 50px 100px -20px rgba(0, 0, 0, 0.25),
         0 30px 60px -30px rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
-@keyframes slideUp {
-    from {
-        opacity: 0;
-        transform: translateY(50px) scale(0.92);
-        filter: blur(10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-        filter: blur(0);
-    }
+.drill-panel.collapsing .panel-content {
+    overflow: hidden;
+    padding: 0;
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.drill-panel.collapsing .panel-overlay {
+    opacity: 0;
+    transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Hide inner content during expand/collapse animation */
+.panel-content.content-hidden > * {
+    opacity: 0;
+}
+
+.panel-content.content-visible > * {
+    opacity: 1;
+    transition: opacity 0.3s ease;
 }
 
 .panel-header {
@@ -968,11 +988,6 @@ box-shadow:
 }
 
 /* ===== SUB PANEL ===== */
-.drill-panel.sub-panel .panel-content {
-    max-width: 1000px;
-    max-height: 85vh;
-}
-
 .drill-panel.sub-panel .panel-overlay {
     background: rgba(0, 0, 0, 0.5);
 }

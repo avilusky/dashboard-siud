@@ -674,15 +674,15 @@ if (treemapCard) {
     const drillIndicator = treemapCard.querySelector('.drill-indicator');
     if (drillIndicator) {
         drillIndicator.style.cursor = 'pointer';
-        drillIndicator.addEventListener('click', () => {
+        drillIndicator.addEventListener('click', (e) => {
             // Open with all age groups selected
-            document.getElementById('ageGroupPanel').classList.add('active');
+            openPanel('ageGroupPanel', e.currentTarget);
             const allAgeGroups = [];
             document.querySelectorAll('.age-nav-btn').forEach(btn => {
                 btn.classList.add('active');
                 allAgeGroups.push(btn.dataset.age);
             });
-            setTimeout(() => updateAgeGroupCharts(allAgeGroups), 100);
+            setTimeout(() => updateAgeGroupCharts(allAgeGroups), 450);
         });
     }
 }
@@ -946,21 +946,120 @@ claimsOverviewChart = new Chart(claimsCtx, {
 }
 
 // ===== DRILL-DOWN PANELS =====
-function openPanel(panelId) {
-    document.getElementById(panelId).classList.add('active');
+function openPanel(panelId, triggerEl) {
+    const panel = document.getElementById(panelId);
+    const content = panel.querySelector('.panel-content');
+
+    // Get trigger element position
+    const triggerCard = triggerEl ? triggerEl.closest('.card, .kpi-card, .panel-card, section, .period-selector') || triggerEl : null;
+    const rect = triggerCard ? triggerCard.getBoundingClientRect() : null;
+
+    // Store trigger rect for close animation
+    if (rect) {
+        panel.dataset.triggerRect = JSON.stringify({ top: rect.top, left: rect.left, width: rect.width, height: rect.height, borderRadius: getComputedStyle(triggerCard).borderRadius });
+    }
+
+    // Hide content children initially
+    content.classList.add('content-hidden');
+    content.classList.remove('content-visible');
+
+    // Set initial position (from card or center-small)
+    if (rect) {
+        content.style.top = rect.top + 'px';
+        content.style.left = rect.left + 'px';
+        content.style.width = rect.width + 'px';
+        content.style.height = rect.height + 'px';
+        content.style.borderRadius = getComputedStyle(triggerCard).borderRadius;
+    } else {
+        content.style.top = '50%';
+        content.style.left = '50%';
+        content.style.width = '200px';
+        content.style.height = '100px';
+        content.style.transform = 'translate(-50%, -50%)';
+        content.style.borderRadius = '16px';
+    }
+
+    // Show panel - compensate for scrollbar to prevent layout shift
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+    document.body.style.paddingRight = scrollbarWidth + 'px';
     document.body.style.overflow = 'hidden';
-    
-    // Initialize charts when panel opens
-    setTimeout(() => {
-        if (panelId === 'demographicsPanel') initDemographicsCharts();
-        if (panelId === 'claimsPanel') initClaimsCharts();
-        if (panelId === 'profitPanel') initProfitCharts();
-    }, 100);
+    panel.classList.add('active');
+
+    // Determine target size based on panel type
+    const isSubPanel = panel.classList.contains('sub-panel');
+    const customMaxW = panel.dataset.maxWidth ? parseInt(panel.dataset.maxWidth) : null;
+    const maxW = customMaxW || (isSubPanel ? 1000 : 1400);
+    const viewW = window.innerWidth;
+    const targetW = Math.min(viewW * 0.95, maxW);
+    const targetH = window.innerHeight * (isSubPanel ? 0.85 : 0.9);
+    const targetTop = (window.innerHeight - targetH) / 2;
+    const targetLeft = (viewW - targetW) / 2;
+
+    // Animate to expanded state
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            content.style.top = targetTop + 'px';
+            content.style.left = targetLeft + 'px';
+            content.style.width = targetW + 'px';
+            content.style.height = targetH + 'px';
+            content.style.borderRadius = '28px';
+            content.style.transform = '';
+            panel.classList.add('expanded');
+
+            // Show content after expansion
+            setTimeout(() => {
+                content.classList.remove('content-hidden');
+                content.classList.add('content-visible');
+
+                // Initialize charts
+                if (panelId === 'demographicsPanel') initDemographicsCharts();
+                if (panelId === 'claimsPanel') initClaimsCharts();
+                if (panelId === 'profitPanel') initProfitCharts();
+            }, 350);
+        });
+    });
 }
 
 function closePanel(panelId) {
-    document.getElementById(panelId).classList.remove('active');
-    document.body.style.overflow = '';
+    const panel = document.getElementById(panelId);
+    const content = panel.querySelector('.panel-content');
+    const savedRect = panel.dataset.triggerRect ? JSON.parse(panel.dataset.triggerRect) : null;
+
+    // Hide content first
+    content.classList.remove('content-visible');
+    content.classList.add('content-hidden');
+
+    // Add collapsing class for transition
+    panel.classList.add('collapsing');
+    panel.classList.remove('expanded');
+
+    // Fade out immediately (starts transitioning to 0 over 0.5s)
+    content.style.opacity = '0';
+
+    if (savedRect) {
+        // Animate back to card position
+        content.style.top = savedRect.top + 'px';
+        content.style.left = savedRect.left + 'px';
+        content.style.width = savedRect.width + 'px';
+        content.style.height = savedRect.height + 'px';
+        content.style.borderRadius = savedRect.borderRadius;
+    } else {
+        content.style.top = '50%';
+        content.style.left = '50%';
+        content.style.width = '200px';
+        content.style.height = '100px';
+        content.style.transform = 'translate(-50%, -50%)';
+    }
+
+    // Clean up after animation
+    setTimeout(() => {
+        panel.classList.remove('active', 'collapsing');
+        content.style.cssText = '';
+        content.classList.remove('content-hidden', 'content-visible');
+        document.body.style.overflow = '';
+        document.body.style.paddingRight = '';
+        delete panel.dataset.triggerRect;
+    }, 600);
 }
 
 // ===== DEMOGRAPHICS PANEL CHARTS =====
@@ -1650,31 +1749,35 @@ document.addEventListener('DOMContentLoaded', () => {
     initMainCharts();
     
     // Drill-down clicks - only on drill-indicator buttons
-    document.getElementById('demographicsSection').querySelector('.drill-indicator').addEventListener('click', () => openPanel('demographicsPanel'));
-    document.getElementById('claimsSection').querySelector('.drill-indicator').addEventListener('click', () => openPanel('claimsPanel'));
-    document.getElementById('fundSection').querySelector('.drill-indicator').addEventListener('click', () => {
-        openPanel('fundPanel');
-        setTimeout(() => initFundGrowthChart('all'), 100);
+    document.getElementById('demographicsSection').querySelector('.drill-indicator').addEventListener('click', (e) => openPanel('demographicsPanel', e.currentTarget));
+    document.getElementById('claimsSection').querySelector('.drill-indicator').addEventListener('click', (e) => openPanel('claimsPanel', e.currentTarget));
+    document.getElementById('fundSection').querySelector('.drill-indicator').addEventListener('click', (e) => {
+        openPanel('fundPanel', e.currentTarget);
+        setTimeout(() => initFundGrowthChart('all'), 450);
     });
 // Claims approval KPI drill-down
-    document.getElementById('approvalKpi')?.querySelector('.drill-indicator')?.addEventListener('click', () => {
-        document.getElementById('claimsApprovalPanel').classList.add('active');
-        document.body.style.overflow = 'hidden';
-        setTimeout(() => initApprovalChart(), 100);
+    document.getElementById('approvalKpi')?.querySelector('.drill-indicator')?.addEventListener('click', (e) => {
+        openPanel('claimsApprovalPanel', e.currentTarget);
+        setTimeout(() => initApprovalChart(), 450);
     });
 
 // Cancellation card drill-down - only via drill-indicator button
-    document.getElementById('cancellationCard')?.querySelector('.drill-indicator')?.addEventListener('click', () => {
-        openCancellationAgePanel();
+    document.getElementById('cancellationCard')?.querySelector('.drill-indicator')?.addEventListener('click', (e) => {
+        openPanel('cancellationAgePanel', e.currentTarget);
+        // Activate all age groups by default
+        const defaultAgeGroups = [];
+        document.querySelectorAll('.cancel-age-nav-btn').forEach(btn => {
+            btn.classList.add('active');
+            defaultAgeGroups.push(btn.dataset.age);
+        });
+        setTimeout(() => updateCancellationAgeCharts(defaultAgeGroups), 450);
     });
-    
+
     // Close on overlay click
     document.querySelectorAll('.panel-overlay').forEach(overlay => {
         overlay.addEventListener('click', () => {
-            document.querySelectorAll('.drill-panel').forEach(panel => {
-                panel.classList.remove('active');
-            });
-            document.body.style.overflow = '';
+            const panel = overlay.closest('.drill-panel');
+            if (panel) closePanel(panel.id);
         });
     });
     

@@ -23,7 +23,7 @@
 </div>
         </div>
         <div class="header-left">
-            <div class="period-selector exec-summary-btn" onclick="document.getElementById('execSummaryPanel').classList.add('active')" style="cursor: pointer; transition: all 0.2s ease;">
+            <div class="period-selector exec-summary-btn" onclick="openPanel('execSummaryPanel', this)" style="cursor: pointer; transition: all 0.2s ease;">
                 <span class="period-value">📋 תקציר מנהלים</span>
             </div>
             <div class="last-update">
@@ -751,9 +751,9 @@
     box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 "></div>
 <!-- Executive Summary Panel -->
-<div class="drill-panel" id="execSummaryPanel">
+<div class="drill-panel" id="execSummaryPanel" data-max-width="900">
     <div class="panel-overlay" onclick="closePanel('execSummaryPanel')"></div>
-    <div class="panel-content" style="max-width: 900px;">
+    <div class="panel-content">
         <div class="panel-header">
             <div class="panel-title-group">
                 <h2 class="panel-title">תקציר מנהלים</h2>
