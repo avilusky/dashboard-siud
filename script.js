@@ -949,6 +949,17 @@ claimsOverviewChart = new Chart(claimsCtx, {
 function openPanel(panelId, triggerEl) {
     const panel = document.getElementById(panelId);
     const content = panel.querySelector('.panel-content');
+    const isSubPanel = panel.classList.contains('sub-panel');
+
+    // Sub-panels (second-level dialogs) use simple open - no expanding animation
+    if (isSubPanel) {
+        panel.classList.add('active');
+        content.style.cssText = '';
+        panel.classList.add('expanded');
+        content.classList.remove('content-hidden');
+        content.classList.add('content-visible');
+        return;
+    }
 
     // Get trigger element position
     const triggerCard = triggerEl ? triggerEl.closest('.card, .kpi-card, .panel-card, section, .period-selector') || triggerEl : null;
@@ -985,13 +996,12 @@ function openPanel(panelId, triggerEl) {
     document.body.style.overflow = 'hidden';
     panel.classList.add('active');
 
-    // Determine target size based on panel type
-    const isSubPanel = panel.classList.contains('sub-panel');
+    // Determine target size
     const customMaxW = panel.dataset.maxWidth ? parseInt(panel.dataset.maxWidth) : null;
-    const maxW = customMaxW || (isSubPanel ? 1000 : 1400);
+    const maxW = customMaxW || 1400;
     const viewW = window.innerWidth;
     const targetW = Math.min(viewW * 0.95, maxW);
-    const targetH = window.innerHeight * (isSubPanel ? 0.85 : 0.9);
+    const targetH = window.innerHeight * 0.9;
     const targetTop = (window.innerHeight - targetH) / 2;
     const targetLeft = (viewW - targetW) / 2;
 
@@ -1023,6 +1033,21 @@ function openPanel(panelId, triggerEl) {
 function closePanel(panelId) {
     const panel = document.getElementById(panelId);
     const content = panel.querySelector('.panel-content');
+    const isSubPanel = panel.classList.contains('sub-panel');
+
+    // Sub-panels use simple close with quick fade-out
+    if (isSubPanel) {
+        panel.style.transition = 'opacity 0.15s ease';
+        panel.style.opacity = '0';
+        setTimeout(() => {
+            panel.classList.remove('active', 'expanded');
+            panel.style.cssText = '';
+            content.style.cssText = '';
+            content.classList.remove('content-hidden', 'content-visible');
+        }, 150);
+        return;
+    }
+
     const savedRect = panel.dataset.triggerRect ? JSON.parse(panel.dataset.triggerRect) : null;
 
     // Hide content first
