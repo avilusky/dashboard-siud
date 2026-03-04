@@ -57,24 +57,69 @@ const quarters = ['Q3 2024', 'Q4 2024', 'Q1 2025', 'Q2 2025', 'Q3 2025'];
 const years = ['2021', '2022', '2023', '2024', '2025'];
 const quartersExtended = ['Q3 2024', 'Q4 2024', 'Q1 2025', 'Q2 2025', 'Q3 2025', 'Q4 2025'];
 const quartersFull = ['Q4 2022', 'Q1 2023', 'Q2 2023', 'Q3 2023', 'Q4 2023', 'Q1 2024', 'Q2 2024', 'Q3 2024', 'Q4 2024', 'Q1 2025', 'Q2 2025', 'Q3 2025', 'Q4 2025'];
+// רבעונים לניתוח צמיחת קרנות (מורחב מ-Q1 2024)
+const fundGrowthQuarters = ['Q1 2024', 'Q2 2024', 'Q3 2024', 'Q4 2024', 'Q1 2025', 'Q2 2025', 'Q3 2025'];
+
+// נתוני צמיחת קרנות - פקטור ביטוח (כולל transfer), פקטור השקעות, והעברה למבטח
 const fundGrowthData = {
     clalit: {
-        insurance: [213.6, 143.9, 213.8, 237.8, 178.9],
-        finance: [120.1, 54.7, 45.6, 98.6, 114.4]
+        insurance: [370.0, -538.5, 213.6, 143.9, 213.8, 237.8, 178.9],
+        finance: [94.0, 24.5, 120.1, 54.7, 45.6, 98.6, 114.4],
+        transfer: [-32.1, -35.9, -35.8, -35.9, -45.4, -44.3, -43.8]
     },
     maccabi: {
-        insurance: [-195.0, -148.4, -278.1, 205.8, 85.3],
-        finance: [301.7, 243.8, 28.7, 527.5, 371.1]
+        insurance: [161, 60, -21, -149, 109, 206, 86],
+        finance: [505, -39, 302, 244, 28, 527, 371],
+        transfer: [-9, -9, -9, -9, -10, -10, -10]
     },
     meuhedet: {
-        insurance: [17.5, 29.9, 23.8, 56.0, 27.3],
-        finance: [31.2, 24.7, -0.3, 63.9, 46.0]
+        insurance: [5.0, 16.1, 17.5, 29.9, 23.8, 56.0, 27.3],
+        finance: [31.0, 1.9, 31.2, 24.7, -0.3, 63.9, 46.0],
+        transfer: [-16.8, -17.1, -17.6, -18.1, -5.9, -6.0, -6.2]
     },
     leumit: {
-        insurance: [1.3, 2.1, 13.3, 27.9, 35.3],
-        finance: [27.8, 20.9, -0.5, 49.1, 36.1]
+        insurance: [-5.0, 1.8, 1.2, 2.1, 13.5, 27.9, 13.1],
+        finance: [28.0, 1.2, 27.8, 20.9, -0.5, 49.1, 36.1],
+        transfer: [-10.0, -0.9, -1.3, -2.0, -1.5, -1.6, -1.6]
     }
 };
+
+// יתרות קרנות מורחבות (Q1 2024 - Q3 2025) לתצוגת drill-down
+const fundDataExtended = {
+    clalit: [601, 87, 421, 619, 879, 1215, 1508],
+    maccabi: [1055, 6428, 6709, 6807, 6944, 7677, 8134],
+    meuhedet: [315, 333, 382, 436, 460, 580, 653],
+    leumit: [306, 310, 339, 362, 375, 452, 501]
+};
+
+// פירוק מכבי לפי מבטח (הפניקס / מנורה)
+// הערה: העברות בין-חברתיות הפניקס→מנורה נוטרלו לחלוטין:
+// GAP מנורה (מיליונים): [0, 5352.6, 174.3, 3.0, 386.2, 0, 0] - הוחסרו מפקטור ביטוח מנורה
+// העברות הפניקס (מיליונים): [5358, 0, 174, 0, 386, 0, 0] - הוחסרו מפקטור ביטוח ומ-transfer של הפניקס
+const maccabiBreakdown = {
+    phoenix: {
+        fund: [878, 823, 721, 672, 278, 333, 340],
+        insurance: [-16, -21, -8, -122, -21, -18, -35],
+        finance: [505, -34, 80, 73, 13, 73, 42],
+        transfer: [0, 0, 0, 0, 0, 0, 0]
+    },
+    menora: {
+        fund: [177, 5605, 5988, 6135, 6666, 7344, 7794],
+        insurance: [177, 81, -13, -27, 130, 224, 121],
+        finance: [0.1, -5.5, 222, 171, 15, 454, 329],
+        transfer: [-8.9, -9.2, -9.2, -9.1, -10.1, -9.6, -9.6]
+    }
+};
+
+// בסיס לחישוב צמיחה מצטברת של מכבי (יתרה לפני המעבר הפניקס→מנורה)
+const maccabiGrowthBase = {
+    combined: 5728,  // יתרת קרן מכבי משולבת סוף Q4 2023
+    phoenix: 5667,   // יתרת הפניקס סוף Q4 2023
+    menora: 5488     // בסיס לחישוב צמיחת מנורה
+};
+
+// מצב Toggle להעברה למבטח
+let showTransferSeparately = false;
 
 const fundData = {
     clalit: [421, 619, 879, 1215, 1508],
@@ -2119,42 +2164,77 @@ if (ageGroupTrendChart) {
 }
 
 // ===== FUND GROWTH PANEL =====
+let currentFundView = 'all';
+let currentMaccabiSub = 'combined';
+
+function getFundGrowthDataForView(fund, sub) {
+    // מחזיר את הנתונים המתאימים לתצוגה הנבחרת
+    if (fund === 'maccabi_phoenix') {
+        return maccabiBreakdown.phoenix;
+    }
+    if (fund === 'maccabi_menora') {
+        return maccabiBreakdown.menora;
+    }
+    if (fund === 'all') {
+        return {
+            insurance: fundGrowthQuarters.map((_, i) =>
+                fundGrowthData.clalit.insurance[i] +
+                fundGrowthData.maccabi.insurance[i] +
+                fundGrowthData.meuhedet.insurance[i] +
+                fundGrowthData.leumit.insurance[i]
+            ),
+            finance: fundGrowthQuarters.map((_, i) =>
+                fundGrowthData.clalit.finance[i] +
+                fundGrowthData.maccabi.finance[i] +
+                fundGrowthData.meuhedet.finance[i] +
+                fundGrowthData.leumit.finance[i]
+            ),
+            transfer: fundGrowthQuarters.map((_, i) =>
+                fundGrowthData.clalit.transfer[i] +
+                fundGrowthData.maccabi.transfer[i] +
+                fundGrowthData.meuhedet.transfer[i] +
+                fundGrowthData.leumit.transfer[i]
+            )
+        };
+    }
+    return fundGrowthData[fund];
+}
+
+function getBalanceDataForView(fund) {
+    if (fund === 'maccabi_phoenix') return maccabiBreakdown.phoenix.fund;
+    if (fund === 'maccabi_menora') return maccabiBreakdown.menora.fund;
+    if (fund === 'all') {
+        return fundGrowthQuarters.map((_, i) =>
+            fundDataExtended.clalit[i] + fundDataExtended.maccabi[i] +
+            fundDataExtended.meuhedet[i] + fundDataExtended.leumit[i]
+        );
+    }
+    return fundDataExtended[fund];
+}
+
 function initFundGrowthChart(fund = 'clalit') {
     const ctx = document.getElementById('fundGrowthChart').getContext('2d');
     if (fundGrowthChart) fundGrowthChart.destroy();
-    
-    let insuranceData, financeData;
-    
-    if (fund === 'all') {
-        insuranceData = quarters.map((_, i) => 
-            fundGrowthData.clalit.insurance[i] + 
-            fundGrowthData.maccabi.insurance[i] + 
-            fundGrowthData.meuhedet.insurance[i] + 
-            fundGrowthData.leumit.insurance[i]
-        );
-        financeData = quarters.map((_, i) => 
-            fundGrowthData.clalit.finance[i] + 
-            fundGrowthData.maccabi.finance[i] + 
-            fundGrowthData.meuhedet.finance[i] + 
-            fundGrowthData.leumit.finance[i]
-        );
-    } else {
-        insuranceData = fundGrowthData[fund].insurance;
-        financeData = fundGrowthData[fund].finance;
-    }
 
-    // Update summary
-    let balanceData;
-    if (fund === 'all') {
-        balanceData = quarters.map((_, i) => fundData.clalit[i] + fundData.maccabi[i] + fundData.meuhedet[i] + fundData.leumit[i]);
-    } else {
-        balanceData = fundData[fund];
-    }
+    const data = getFundGrowthDataForView(fund);
+    const balanceData = getBalanceDataForView(fund);
+
+    // חישוב סיכומים
     const latestBalance = balanceData[balanceData.length - 1];
     const prevBalance = balanceData[balanceData.length - 2];
-    const firstBalance = balanceData[0];
-    const qoqChange = ((latestBalance - prevBalance) / prevBalance * 100).toFixed(1);
-    const totalGrowth = ((latestBalance - firstBalance) / firstBalance * 100).toFixed(1);
+    // בסיס לצמיחה: מכבי משתמש בבסיס מלפני המעבר בין-חברתי
+    let firstBalance;
+    if (fund === 'maccabi') {
+        firstBalance = maccabiGrowthBase.combined;
+    } else if (fund === 'maccabi_phoenix') {
+        firstBalance = maccabiGrowthBase.phoenix;
+    } else if (fund === 'maccabi_menora') {
+        firstBalance = maccabiGrowthBase.menora;
+    } else {
+        firstBalance = balanceData[0];
+    }
+    const qoqChange = ((latestBalance - prevBalance) / prevBalance * 100).toFixed(0);
+    const totalGrowth = ((latestBalance - firstBalance) / firstBalance * 100).toFixed(0);
 
     document.getElementById('fundSummaryBalance').textContent = '₪' + (latestBalance / 1000).toFixed(2) + 'B';
     document.getElementById('fundSummaryChange').textContent = (qoqChange > 0 ? '+' : '') + qoqChange + '%';
@@ -2162,60 +2242,117 @@ function initFundGrowthChart(fund = 'clalit') {
     document.getElementById('fundSummaryGrowth').textContent = (totalGrowth > 0 ? '+' : '') + totalGrowth + '%';
     document.getElementById('fundSummaryGrowth').className = 'panel-summary-value ' + (totalGrowth >= 0 ? 'positive' : 'negative');
 
+    // בניית datasets לפי מצב Toggle
+    let datasets;
+    if (showTransferSeparately) {
+        // 3 עמודות: ביטוח (ללא העברה), העברה למבטח, השקעות
+        const insuranceNet = data.insurance.map((v, i) => v - data.transfer[i]);
+        datasets = [
+            {
+                label: 'פקטור ביטוח (ללא העברה)',
+                data: insuranceNet,
+                backgroundColor: colors.clalit,
+                borderRadius: 4,
+                barPercentage: 0.65,
+                categoryPercentage: 0.7,
+                stack: 'stack1'
+            },
+            {
+                label: 'העברה למבטח',
+                data: data.transfer,
+                backgroundColor: '#E74C3C',
+                borderRadius: 4,
+                barPercentage: 0.65,
+                categoryPercentage: 0.7,
+                stack: 'stack1'
+            },
+            {
+                label: 'פקטור השקעות',
+                data: data.finance,
+                backgroundColor: colors.leumit,
+                borderRadius: 4,
+                barPercentage: 0.65,
+                categoryPercentage: 0.7,
+                stack: 'stack1'
+            }
+        ];
+    } else {
+        // 2 עמודות: ביטוח (כולל העברה), השקעות
+        datasets = [
+            {
+                label: 'פקטור ביטוח',
+                data: data.insurance,
+                backgroundColor: colors.clalit,
+                borderRadius: 4,
+                barPercentage: 0.65,
+                categoryPercentage: 0.7,
+                stack: 'stack1'
+            },
+            {
+                label: 'פקטור השקעות',
+                data: data.finance,
+                backgroundColor: colors.leumit,
+                borderRadius: 4,
+                barPercentage: 0.65,
+                categoryPercentage: 0.7,
+                stack: 'stack1'
+            }
+        ];
+    }
+
     fundGrowthChart = new Chart(ctx, {
         type: 'bar',
         data: {
-            labels: quarters,
-            datasets: [
-                {
-                    label: 'פקטור ביטוח',
-                    data: insuranceData,
-                    backgroundColor: colors.clalit,
-                    borderRadius: 4,
-                    barPercentage: 0.65,
-                    categoryPercentage: 0.7,
-                    stack: 'stack1'
-                },
-                {
-                    label: 'פקטור השקעות',
-                    data: financeData,
-                    backgroundColor: colors.leumit,
-                    borderRadius: 4,
-                    barPercentage: 0.65,
-                    categoryPercentage: 0.7,
-                    stack: 'stack1'
-                }
-            ]
+            labels: fundGrowthQuarters,
+            datasets: datasets
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
             animation: barAnimation,
-            plugins: { 
+            plugins: {
                 legend: { position: 'top' },
                 tooltip: {
+                    mode: 'index',
+                    intersect: false,
                     callbacks: {
-                        label: (ctx) => `${ctx.dataset.label}: ₪${ctx.raw.toFixed(1)}M`
+                        label: (ctx) => {
+                            const val = ctx.raw;
+                            if (Math.abs(val) >= 1000) {
+                                return `${ctx.dataset.label}: ₪${(val/1000).toFixed(2)}B`;
+                            }
+                            return `${ctx.dataset.label}: ₪${val.toFixed(1)}M`;
+                        },
+                        afterBody: (tooltipItems) => {
+                            const total = tooltipItems.reduce((sum, item) => sum + item.raw, 0);
+                            if (Math.abs(total) >= 1000) {
+                                return `סה"כ שינוי: ₪${(total/1000).toFixed(2)}B`;
+                            }
+                            return `סה"כ שינוי: ₪${total.toFixed(1)}M`;
+                        }
                     }
                 }
             },
-scales: {
-    x: { 
-        grid: { display: false },
-        stacked: true
-    },
-    y: { 
-        stacked: true,
-        grid: { 
-            color: (context) => context.tick.value === 0 ? '#64748b' : '#F1F5F9',
-            lineWidth: (context) => context.tick.value === 0 ? 2 : 1
-        },
-        ticks: { 
-            maxTicksLimit: 7,
-            callback: (v) => '₪' + v + 'M'
-        }
-    }
-}
+            scales: {
+                x: {
+                    grid: { display: false },
+                    stacked: true
+                },
+                y: {
+                    stacked: true,
+                    grid: {
+                        color: (context) => context.tick.value === 0 ? '#64748b' : '#F1F5F9',
+                        lineWidth: (context) => context.tick.value === 0 ? 2 : 1
+                    },
+                    ticks: {
+                        maxTicksLimit: 7,
+                        callback: (v) => {
+                            if (Math.abs(v) >= 1000) return '₪' + (v/1000).toFixed(1) + 'B';
+                            return '₪' + v + 'M';
+                        }
+                    }
+                }
+            }
         }
     });
 }
@@ -2224,6 +2361,9 @@ scales: {
 function openFundPanel() {
     document.getElementById('fundPanel').classList.add('active');
     document.body.style.overflow = 'hidden';
+    currentFundView = 'all';
+    currentMaccabiSub = 'combined';
+    document.getElementById('maccabiSubNav').style.display = 'none';
     setTimeout(() => initFundGrowthChart('all'), 100);
 }
 
@@ -2232,8 +2372,49 @@ document.querySelectorAll('.fund-nav-btn').forEach(btn => {
     btn.addEventListener('click', () => {
         document.querySelectorAll('.fund-nav-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-        initFundGrowthChart(btn.dataset.fund);
+        currentFundView = btn.dataset.fund;
+        currentMaccabiSub = 'combined';
+
+        // הצגת/הסתרת תת-ניווט מכבי
+        const subNav = document.getElementById('maccabiSubNav');
+        if (btn.dataset.fund === 'maccabi') {
+            subNav.style.display = 'flex';
+            document.querySelectorAll('.fund-sub-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector('.fund-sub-btn[data-sub="combined"]').classList.add('active');
+            initFundGrowthChart('maccabi');
+        } else {
+            subNav.style.display = 'none';
+            initFundGrowthChart(btn.dataset.fund);
+        }
     });
+});
+
+// Maccabi sub-nav buttons
+document.querySelectorAll('.fund-sub-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.fund-sub-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentMaccabiSub = btn.dataset.sub;
+
+        if (btn.dataset.sub === 'combined') {
+            initFundGrowthChart('maccabi');
+        } else if (btn.dataset.sub === 'phoenix') {
+            initFundGrowthChart('maccabi_phoenix');
+        } else if (btn.dataset.sub === 'menora') {
+            initFundGrowthChart('maccabi_menora');
+        }
+    });
+});
+
+// Transfer toggle handler
+document.getElementById('transferToggle').addEventListener('change', (e) => {
+    showTransferSeparately = e.target.checked;
+    // רינדור מחדש של הגרף הנוכחי
+    if (currentFundView === 'maccabi' && currentMaccabiSub !== 'combined') {
+        initFundGrowthChart('maccabi_' + currentMaccabiSub);
+    } else {
+        initFundGrowthChart(currentFundView);
+    }
 });
 
 function openCancellationAgePanel(ageGroup) {

@@ -248,6 +248,23 @@
             <button class="fund-nav-btn" data-fund="leumit">לאומית</button>
         </div>
 
+        <!-- תת-ניווט למכבי: פירוק לפי מבטח -->
+        <div class="fund-sub-nav" id="maccabiSubNav" style="display:none;">
+            <span class="sub-nav-label">פירוק לפי מבטח:</span>
+            <button class="fund-sub-btn active" data-sub="combined">משולב</button>
+            <button class="fund-sub-btn" data-sub="phoenix">הפניקס (Run-off)</button>
+            <button class="fund-sub-btn" data-sub="menora">מנורה</button>
+        </div>
+
+        <!-- Toggle להפרדת העברה למבטח -->
+        <div class="transfer-toggle-wrapper">
+            <label class="transfer-toggle">
+                <input type="checkbox" id="transferToggle">
+                <span class="toggle-slider"></span>
+            </label>
+            <span class="transfer-toggle-label">הפרד העברה למבטח מפקטור הביטוח</span>
+        </div>
+
         <div class="panel-summary" id="fundSummary">
             <div class="panel-summary-item">
                 <span class="panel-summary-value" id="fundSummaryBalance">—</span>
