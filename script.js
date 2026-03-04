@@ -111,8 +111,9 @@ const maccabiBreakdown = {
     }
 };
 
-// בסיס לחישוב צמיחה מצטברת של מכבי (יתרה לפני המעבר הפניקס→מנורה)
-const maccabiGrowthBase = {
+// בסיס לחישוב צמיחה מצטברת - יתרות לפני המעבר הפניקס→מנורה
+const growthBase = {
+    all: 6466,       // סך כל הקרנות סוף Q4 2023
     combined: 5728,  // יתרת קרן מכבי משולבת סוף Q4 2023
     phoenix: 5667,   // יתרת הפניקס סוף Q4 2023
     menora: 5488     // בסיס לחישוב צמיחת מנורה
@@ -123,7 +124,7 @@ let showTransferSeparately = false;
 
 const fundData = {
     clalit: [421, 619, 879, 1215, 1508],
-    maccabi: [6534, 6804, 6558, 7677, 8134],
+    maccabi: [6534, 6804, 6944, 7677, 8134],
     meuhedet: [382, 436, 460, 580, 653],
     leumit: [339, 362, 375, 452, 501]
 };
@@ -2222,14 +2223,16 @@ function initFundGrowthChart(fund = 'clalit') {
     // חישוב סיכומים
     const latestBalance = balanceData[balanceData.length - 1];
     const prevBalance = balanceData[balanceData.length - 2];
-    // בסיס לצמיחה: מכבי משתמש בבסיס מלפני המעבר בין-חברתי
+    // בסיס לצמיחה: שימוש ביתרות מלפני המעבר בין-חברתי
     let firstBalance;
-    if (fund === 'maccabi') {
-        firstBalance = maccabiGrowthBase.combined;
+    if (fund === 'all') {
+        firstBalance = growthBase.all;
+    } else if (fund === 'maccabi') {
+        firstBalance = growthBase.combined;
     } else if (fund === 'maccabi_phoenix') {
-        firstBalance = maccabiGrowthBase.phoenix;
+        firstBalance = growthBase.phoenix;
     } else if (fund === 'maccabi_menora') {
-        firstBalance = maccabiGrowthBase.menora;
+        firstBalance = growthBase.menora;
     } else {
         firstBalance = balanceData[0];
     }
