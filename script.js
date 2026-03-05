@@ -1417,6 +1417,15 @@ function initAgeFrequencyChart(selectedGroups) {
         });
     }
 
+    // Calculate max value to determine Y-axis decimal precision dynamically
+    const allChartValues = [];
+    selectedGroups.forEach(g => allChartValues.push(...frequencyByAge[g]));
+    if (selectedGroups.length > 1) allChartValues.push(...combinedData);
+    const maxVal = Math.max(...allChartValues);
+    const decimals = maxVal < 0.1 ? 3 : maxVal < 1 ? 2 : null;
+    const yTickCallback = (v) => decimals !== null ? v.toFixed(decimals) + '%' : Math.round(v) + '%';
+    const tooltipDecimals = decimals !== null ? Math.max(decimals, 2) : 2;
+
     const ctx = document.getElementById('ageFrequencyChart');
     if (!ctx) return;
     if (ageFrequencyChart) ageFrequencyChart.destroy();
@@ -1436,7 +1445,7 @@ function initAgeFrequencyChart(selectedGroups) {
                 legend: { position: 'bottom', labels: { usePointStyle: true } },
                 tooltip: {
                     callbacks: {
-                        label: (ctx) => `${ctx.dataset.label}: ${ctx.raw.toFixed(2)}%`
+                        label: (ctx) => `${ctx.dataset.label}: ${ctx.raw.toFixed(tooltipDecimals)}%`
                     }
                 },
                 datalabels: { display: false }
@@ -1445,7 +1454,7 @@ function initAgeFrequencyChart(selectedGroups) {
                 x: { grid: { display: false } },
                 y: {
                     grid: { color: '#F1F5F9' },
-                    ticks: { callback: (v) => Math.round(v) + '%' }
+                    ticks: { callback: yTickCallback }
                 }
             }
         }
